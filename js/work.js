@@ -415,47 +415,56 @@ document.addEventListener("DOMContentLoaded", () => {
      ======================================================= */
 
   function createPages(body) {
-    if (!body) {
-      return [""];
-    }
-
-    /*
-     * ===PAGE=== がある場合。
-     *
-     * 区切り文字そのものだけ削除し、
-     * 各ページの本文にはtrim()をかけない。
-     */
-    if (
-      body.includes("===PAGE===")
-    ) {
-      const manualPages =
-        body.split(
-          /\n?\s*===PAGE===\s*\n?/
-        );
-
-      return manualPages
-        .map((page) => {
-          /*
-           * 末尾の改行だけ整理。
-           *
-           * 先頭の全角スペースはそのまま。
-           */
-          return page.replace(
-            /\n+$/,
-            ""
-          );
-        })
-        .filter(
-          (page) =>
-            page.trim() !== ""
-        );
-    }
-
-    /*
-     * ===PAGE=== がない場合。
-     */
-    return autoSplitPages(body);
+  if (!body) {
+    return [""];
   }
+
+  /*
+   * ===PAGE=== がある場合。
+   *
+   * 「===PAGE===」そのものだけを
+   * ページ区切りとして扱う。
+   *
+   * \s は使用しない。
+   *
+   * \s には全角スペース「　」も含まれるため、
+   * ページ直後の本文の字下げまで
+   * 消してしまう可能性がある。
+   */
+  if (
+    body.includes("===PAGE===")
+  ) {
+    const manualPages =
+      body.split("===PAGE===");
+
+    return manualPages
+      .map((page) => {
+        /*
+         * ===PAGE=== の周囲にある
+         * 構造上の改行だけを削除する。
+         *
+         * 全角スペース「　」
+         * 半角スペース
+         * 本文の文字
+         *
+         * は削除しない。
+         */
+        return page
+          .replace(/^\r?\n+/, "")
+          .replace(/\r?\n+$/, "");
+      })
+      .filter(
+        (page) =>
+          page.trim() !== ""
+      );
+  }
+
+  /*
+   * ===PAGE=== がない場合は
+   * 通常の自動ページ分割。
+   */
+  return autoSplitPages(body);
+}
 
   /* =======================================================
      Work Data
