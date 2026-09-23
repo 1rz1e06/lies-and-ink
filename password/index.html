@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="robots"
+    content="noindex, nofollow, noarchive"
+  >
+
+  <title>ENTER — Lies & Ink</title>
+
+  <link
+    rel="stylesheet"
+    href="../css/password.css"
+  >
+</head>
+
+
+<body>
+
+  <main class="password-page">
+
+    <a
+      href="../index.html"
+      class="back-link"
+    >
+      ← HOME
+    </a>
+
+
+    <section class="password-content">
+
+      <p class="eyebrow">
+        Lies &amp; Ink
+      </p>
+
+      <h1>
+        ENTER
+      </h1>
+
+      <p class="password-description">
+        この先へ進むには<br>
+        パスワードが必要です。
+      </p>
+
+
+      <form
+        class="password-form"
+        id="passwordForm"
+      >
+
+        <label
+          for="password"
+          class="visually-hidden"
+        >
+          パスワード
+        </label>
+
+        <input
+          type="password"
+          id="password"
+          name="password"
+          autocomplete="off"
+          spellcheck="false"
+        >
+
+
+        <button
+          type="submit"
+        >
+          OPEN
+        </button>
+
+
+        <p
+          class="error-message"
+          id="errorMessage"
+          aria-live="polite"
+        ></p>
+
+      </form>
+
+    </section>
+
+
+    <footer class="password-footer">
+      <span>
+        Please read ABOUT before entering.
+      </span>
+    </footer>
+
+  </main>
+
+
+  <script src="../js/password.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <meta
+    name="robots"
+    content="noindex, nofollow, noarchive"
+  >
+
+  <title>Lies &amp; Ink — Work</title>
+
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/work.css">
+</head>
+
+<body class="work-page">
+
+  <main
+    class="work"
+    id="work"
+  >
+
+    <div
+      class="work__background"
+      aria-hidden="true"
+    ></div>
+
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="work-header">
+
+      <a
+        href="#"
+        class="work-header__back"
+        id="backToBookshelf"
+      >
+        ‹ BOOKSHELF
+      </a>
+
+      <div class="work-header__brand">
+        LIES &amp; INK
+      </div>
+
+    </header>
+
+
+    <!-- =========================
+         WORK INTRO
+    ========================== -->
+
+    <section
+      class="work-intro"
+      id="workIntro"
+      aria-label="作品情報"
+    >
+
+      <!-- COVER -->
+
+      <div
+        class="work-cover"
+        id="workCover"
+        aria-hidden="true"
+        hidden
+      >
+
+        <img
+          id="workCoverImage"
+          class="work-cover__image"
+          src=""
+          alt=""
+        >
+
+      </div>
+
+
+      <!-- TITLE -->
+
+      <div
+        class="work-title"
+        id="workTitleBlock"
+        aria-label="作品タイトル"
+      >
+
+        <p
+          class="work-title__number"
+          id="workNumber"
+        >
+          01
+        </p>
+
+        <h1
+          class="work-title__title"
+          id="workTitle"
+        >
+          —
+        </h1>
+
+      </div>
+
+
+      <!-- DESCRIPTION -->
+
+      <section
+        class="work-info"
+        id="workInfo"
+        aria-label="作品紹介"
+      >
+
+        <div
+          class="work-info__meta"
+          id="workMeta"
+          aria-hidden="true"
+        ></div>
+
+        <div
+          class="work-info__description"
+          id="workDescription"
+        ></div>
+
+      </section>
+
+    </section>
+
+
+    <!-- =========================
+         STORY PAGE
+    ========================== -->
+
+    <section
+      class="work-reader"
+      id="workReader"
+      aria-label="作品本文"
+    >
+
+      <!-- PAGE -->
+
+      <div
+        class="work-page-view"
+        id="workPageView"
+      >
+
+        <article
+          class="work-story"
+          id="workBody"
+        ></article>
+
+      </div>
+
+
+      <!-- PAGE NUMBER -->
+
+      <div
+        class="work-page-indicator"
+        id="workPageIndicator"
+        aria-live="polite"
+      >
+
+        <span id="currentPage">
+          01
+        </span>
+
+        <span class="work-page-indicator__slash">
+          /
+        </span>
+
+        <span id="totalPages">
+          01
+        </span>
+
+      </div>
+
+
+      <!-- PAGE NAVIGATION -->
+
+      <nav
+        class="work-page-navigation"
+        aria-label="ページ移動"
+      >
+
+        <button
+          type="button"
+          class="work-page-navigation__button work-page-navigation__prev"
+          id="prevPage"
+        >
+          ‹ PREV
+        </button>
+
+        <button
+          type="button"
+          class="work-page-navigation__button work-page-navigation__next"
+          id="nextPage"
+        >
+          NEXT ›
+        </button>
+
+      </nav>
+
+    </section>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="work-footer">
+
+      <a
+        href="#"
+        id="backToBookshelfFooter"
+        class="work-footer__back"
+      >
+        BACK TO BOOKSHELF
+      </a>
+
+    </footer>
+
+
+    <!-- =========================
+         LOADING
+    ========================== -->
+
+    <div
+      class="work-loading"
+      id="workLoading"
+      aria-hidden="true"
+    >
+      <span id="workLoadingText">
+        LOADING
+      </span>
+    </div>
+
+  </main>
+
+
+  <script src="../js/data.js"></script>
+  <script src="../js/work.js"></script>
+
+</body>
+</html>

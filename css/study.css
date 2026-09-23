@@ -1,0 +1,1383 @@
+/* =========================================================
+   Lies & Ink
+   STUDY
+   ========================================================= */
+
+
+/* =========================================================
+   1. BASE
+   ========================================================= */
+
+:root {
+  --study-black: #02070d;
+  --study-navy: #061321;
+  --study-blue: #0a1b2d;
+
+  --study-text: #e9eef3;
+  --study-text-soft: rgba(233, 238, 243, 0.55);
+  --study-text-faint: rgba(233, 238, 243, 0.34);
+
+  --study-line: rgba(174, 198, 220, 0.24);
+  --study-line-soft: rgba(174, 198, 220, 0.12);
+
+  --study-purple: #817A9C;
+}
+
+
+/* =========================================================
+   2. PAGE
+   ========================================================= */
+
+html {
+  background: var(--study-black);
+}
+
+body {
+  margin: 0;
+
+  background:
+    var(--study-black);
+
+  color:
+    var(--study-text);
+}
+
+.study {
+  position: relative;
+
+  min-height: 100svh;
+
+  padding:
+    72px
+    18px
+    56px;
+
+  box-sizing: border-box;
+
+  overflow-x: hidden;
+
+  background:
+    var(--study-black);
+}
+
+
+/* =========================================================
+   3. BACKGROUND
+   ========================================================= */
+
+.study__background {
+  position: fixed;
+  inset: 0;
+
+  z-index: 0;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(110, 145, 181, 0.12),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 50% 100%,
+      rgba(52, 38, 76, 0.13),
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      var(--study-navy) 0%,
+      #030a12 55%,
+      var(--study-black) 100%
+    );
+}
+
+
+/* subtle light */
+
+.study__light {
+  position: fixed;
+
+  z-index: 1;
+
+  top: 12%;
+  left: 50%;
+
+  width:
+    min(90vw, 760px);
+
+  height:
+    55vh;
+
+  transform:
+    translateX(-50%);
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(119, 151, 181, 0.065),
+      transparent 68%
+    );
+}
+
+
+/* =========================================================
+   4. HOME LINK
+   ========================================================= */
+
+.study-home-link {
+  position: absolute;
+
+  top: 18px;
+  left: 18px;
+
+  z-index: 10;
+
+  padding:
+    8px 4px;
+
+  color:
+    var(--study-text-faint);
+
+  font-size:
+    0.62rem;
+
+  letter-spacing:
+    0.18em;
+
+  text-decoration:
+    none;
+
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.study-home-link:hover,
+.study-home-link:focus-visible {
+  color:
+    #6E91B5;
+
+  transform:
+    translateX(-3px);
+}
+
+.study-home-link:focus-visible {
+  outline: none;
+}
+
+
+/* =========================================================
+   5. HEADER
+   ========================================================= */
+
+.study-header {
+  position: relative;
+
+  z-index: 5;
+
+  max-width:
+    760px;
+
+  margin:
+    0 auto
+    42px;
+
+  text-align:
+    center;
+}
+
+.study-header__small {
+  margin:
+    0 0 10px;
+
+  color:
+    #6E91B5;
+
+  font-size:
+    0.55rem;
+
+  letter-spacing:
+    0.34em;
+}
+
+.study-header__title {
+  margin:
+    0;
+
+  color:
+    var(--study-text);
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    clamp(2rem, 9vw, 3.4rem);
+
+  font-weight:
+    400;
+
+  line-height:
+    1.15;
+
+  letter-spacing:
+    0.1em;
+
+  text-shadow:
+    0 4px 24px
+    rgba(16, 24, 39, 0.5);
+}
+
+.study-header__description {
+  margin:
+    16px auto 0;
+
+  color:
+    var(--study-text-soft);
+
+  font-size:
+    0.58rem;
+
+  line-height:
+    1.9;
+
+  letter-spacing:
+    0.28em;
+}
+
+
+/* =========================================================
+   6. SHELVES
+   ========================================================= */
+
+.shelves {
+  position: relative;
+
+  z-index: 4;
+
+  width:
+    min(100%, 760px);
+
+  margin:
+    0 auto;
+
+  transition:
+    opacity 0.35s ease;
+}
+
+
+/* =========================================================
+   7. SHELF
+   ========================================================= */
+
+.shelf {
+  --category-color: #6E91B5;
+
+  position: relative;
+
+  width:
+    100%;
+
+  margin:
+    0 auto
+    42px;
+
+  padding:
+    0
+    12px
+    14px;
+
+  box-sizing:
+    border-box;
+
+  border-bottom:
+    1px solid
+    rgba(110, 145, 181, 0.22);
+
+  box-shadow:
+    0 10px 25px
+    rgba(16, 24, 39, 0.18);
+
+  cursor:
+    pointer;
+
+  outline:
+    none;
+
+  transform-origin:
+    center bottom;
+
+  transition:
+    opacity 0.42s ease,
+    transform 0.5s cubic-bezier(0.2, 0.75, 0.2, 1),
+    filter 0.42s ease;
+}
+
+
+/* shelf glow */
+
+.shelf::after {
+  content: "";
+
+  position: absolute;
+
+  left: 5%;
+  right: 5%;
+  bottom: -1px;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--category-color),
+      transparent
+    );
+
+  opacity:
+    0.32;
+
+  pointer-events:
+    none;
+
+  transition:
+    opacity 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+
+/* =========================================================
+   8. SHELF LABEL
+   ========================================================= */
+
+.shelf__name {
+  margin:
+    0 0 14px;
+
+  color:
+    color-mix(
+      in srgb,
+      var(--category-color) 72%,
+      #e9eef3 28%
+    );
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    0.96rem;
+
+  font-weight:
+    400;
+
+  letter-spacing:
+    0.1em;
+
+  text-align:
+    center;
+
+  transition:
+    color 0.4s ease,
+    letter-spacing 0.4s ease,
+    opacity 0.4s ease;
+}
+
+.shelf__name::after {
+  content: "";
+
+  display:
+    block;
+
+  width:
+    24px;
+
+  height:
+    1px;
+
+  margin:
+    9px auto 0;
+
+  background:
+    var(--category-color);
+
+  opacity:
+    0.5;
+
+  transition:
+    width 0.4s ease,
+    opacity 0.4s ease;
+}
+
+
+/* =========================================================
+   9. BOOK AREA
+   ========================================================= */
+
+.shelf__books {
+  min-height:
+    118px;
+
+  display:
+    flex;
+
+  align-items:
+    flex-end;
+
+  justify-content:
+    center;
+
+  gap:
+    5px;
+
+  overflow:
+    visible;
+}
+
+
+/* =========================================================
+   10. BOOK
+   ========================================================= */
+
+/*
+   STUDYでは本のタイトルを表示しない。
+
+   背表紙そのものをカテゴリカラーにする。
+*/
+
+.study-book {
+  position:
+    relative;
+
+  flex:
+    0 0 auto;
+
+  width:
+    25px;
+
+  height:
+    105px;
+
+  padding:
+    0;
+
+  /*
+   * タイトル等がJSから直接入っていても
+   * 背表紙上には表示しない
+   */
+  color:
+    transparent;
+
+  font-size:
+    0;
+
+  line-height:
+    0;
+
+  text-indent:
+    -9999px;
+
+  white-space:
+    nowrap;
+
+  overflow:
+    hidden;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--category-color) 72%,
+      #e9eef3 28%
+    );
+
+  border-radius:
+    1px 1px 0 0;
+
+  /*
+   * 本そのものをカテゴリカラーにする
+   */
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(
+        in srgb,
+        var(--category-color) 62%,
+        #101827 38%
+      ) 0%,
+
+      color-mix(
+        in srgb,
+        var(--category-color) 88%,
+        #101827 12%
+      ) 45%,
+
+      color-mix(
+        in srgb,
+        var(--category-color) 68%,
+        #101827 32%
+      ) 100%
+    );
+
+  box-shadow:
+    2px 0 8px
+    rgba(0, 0, 0, 0.28),
+
+    inset 1px 0 0
+    rgba(255, 255, 255, 0.08),
+
+    inset -2px 0 4px
+    rgba(0, 0, 0, 0.18);
+
+  transform-origin:
+    bottom center;
+
+  transition:
+    transform 0.32s ease,
+    border-color 0.32s ease,
+    box-shadow 0.32s ease,
+    filter 0.32s ease,
+    opacity 0.32s ease;
+}
+
+
+/* =========================================================
+   11. BOOK SPINE DETAIL
+   ========================================================= */
+
+/*
+   タイトルの代わりに中央に非常に薄い
+   背表紙の陰影だけを入れる。
+*/
+
+.study-book::before {
+  content: "";
+
+  position:
+    absolute;
+
+  top:
+    8px;
+
+  bottom:
+    8px;
+
+  left:
+    50%;
+
+  width:
+    1px;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--category-color) 30%,
+      rgba(255, 255, 255, 0.08)
+    );
+
+  transform:
+    translateX(-50%);
+
+  opacity:
+    0.65;
+}
+
+
+/* bottom detail */
+
+.study-book::after {
+  content: "";
+
+  position:
+    absolute;
+
+  left:
+    4px;
+
+  right:
+    4px;
+
+  bottom:
+    5px;
+
+  height:
+    1px;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--category-color) 70%,
+      rgba(255, 255, 255, 0.12)
+    );
+
+  opacity:
+    0.7;
+}
+
+
+/* =========================================================
+   12. BOOK HEIGHT VARIATIONS
+   ========================================================= */
+
+.study-book:nth-child(2n) {
+  height:
+    94px;
+}
+
+.study-book:nth-child(3n) {
+  height:
+    112px;
+}
+
+.study-book:nth-child(4n) {
+  height:
+    101px;
+}
+
+.study-book:nth-child(5n) {
+  height:
+    88px;
+}
+
+
+/* =========================================================
+   13. BOOK HOVER
+   ========================================================= */
+
+.study-book:hover,
+.study-book:focus-visible {
+  border-color:
+    var(--category-color);
+
+  box-shadow:
+    0 0 18px
+    color-mix(
+      in srgb,
+      var(--category-color) 20%,
+      transparent
+    ),
+
+    2px 0 8px
+    rgba(0, 0, 0, 0.25),
+
+    inset 1px 0 0
+    rgba(255, 255, 255, 0.1);
+
+  filter:
+    brightness(1.08);
+
+  transform:
+    translateY(-8px);
+}
+
+.study-book:focus-visible {
+  outline:
+    1px solid
+    var(--category-color);
+
+  outline-offset:
+    3px;
+}
+
+
+/* =========================================================
+   14. SELECTED BOOK
+   ========================================================= */
+
+.study-book.is-selected {
+  z-index:
+    20;
+
+  border-color:
+    var(--category-color);
+
+  box-shadow:
+    0 0 24px
+    color-mix(
+      in srgb,
+      var(--category-color) 28%,
+      transparent
+    ),
+
+    0 14px 28px
+    rgba(0, 0, 0, 0.35),
+
+    inset 1px 0 0
+    rgba(255, 255, 255, 0.1);
+
+  filter:
+    brightness(1.08);
+
+  transform:
+    translateY(-16px)
+    scale(1.08);
+}
+
+
+/* =========================================================
+   15. SELECTED SHELF
+   ========================================================= */
+
+.shelf.is-selected {
+  z-index:
+    15;
+
+  transform:
+    scale(1.025)
+    translateY(-3px);
+}
+
+.shelf.is-selected .shelf__name {
+  color:
+    var(--category-color);
+
+  letter-spacing:
+    0.14em;
+}
+
+.shelf.is-selected .shelf__name::after {
+  width:
+    38px;
+
+  opacity:
+    0.9;
+}
+
+.shelf.is-selected::after {
+  opacity:
+    0.8;
+
+  box-shadow:
+    0 0 14px
+    color-mix(
+      in srgb,
+      var(--category-color) 30%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   16. OTHER SHELVES
+   ========================================================= */
+
+.shelves.has-selection
+.shelf:not(.is-selected) {
+  opacity:
+    0.12;
+
+  transform:
+    scale(0.965);
+
+  filter:
+    brightness(0.42)
+    saturate(0.4);
+}
+
+.shelves.has-selection
+.shelf:not(.is-selected)
+.shelf__name {
+  opacity:
+    0.2;
+}
+
+.shelves.has-selection
+.shelf:not(.is-selected)
+.study-book {
+  filter:
+    brightness(0.5);
+}
+
+
+/* =========================================================
+   17. SHELF FOCUS
+   ========================================================= */
+
+.shelf-focus {
+  position:
+    fixed;
+
+  inset:
+    0;
+
+  z-index:
+    50;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  padding:
+    20px;
+
+  box-sizing:
+    border-box;
+
+  background:
+    rgba(1, 5, 10, 0.94);
+
+  opacity:
+    0;
+
+  visibility:
+    hidden;
+
+  pointer-events:
+    none;
+
+  transition:
+    opacity 0.22s ease,
+    visibility 0.22s ease;
+}
+
+.shelf-focus.is-active {
+  opacity:
+    1;
+
+  visibility:
+    visible;
+}
+
+
+/* focus inner */
+
+.shelf-focus__inner {
+  width:
+    100%;
+
+  max-width:
+    700px;
+
+  text-align:
+    center;
+
+  transform:
+    scale(0.76);
+
+  opacity:
+    0;
+}
+
+.shelf-focus.is-active
+.shelf-focus__inner {
+  animation:
+    shelfZoom
+    0.7s
+    cubic-bezier(0.2, 0.7, 0.2, 1)
+    forwards;
+}
+
+
+/* =========================================================
+   18. FOCUS CATEGORY
+   ========================================================= */
+
+.shelf-focus__category {
+  margin:
+    0
+    0
+    30px;
+
+  color:
+    var(--focus-color, #6E91B5);
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    clamp(
+      1.8rem,
+      8vw,
+      3.8rem
+    );
+
+  font-weight:
+    400;
+
+  letter-spacing:
+    0.12em;
+}
+
+
+/* =========================================================
+   19. FOCUS BOOKS
+   ========================================================= */
+
+.shelf-focus__books {
+  display:
+    flex;
+
+  align-items:
+    flex-end;
+
+  justify-content:
+    center;
+
+  gap:
+    6px;
+
+  min-height:
+    155px;
+
+  overflow:
+    visible;
+}
+
+
+/* focus book */
+
+.shelf-focus__books
+.study-book {
+  width:
+    25px;
+
+  min-height:
+    105px;
+
+  max-height:
+    145px;
+
+  opacity:
+    0.45;
+
+  transform:
+    translateY(0)
+    scale(1);
+}
+
+
+/*
+   Focus画面でもタイトルは表示しない。
+*/
+
+.shelf-focus__books
+.study-book.is-selected {
+  z-index:
+    5;
+
+  opacity:
+    1;
+
+  transform:
+    translateY(-18px)
+    scale(1.16);
+
+  box-shadow:
+    0 0 30px
+    color-mix(
+      in srgb,
+      var(--focus-color) 32%,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   20. FOCUS LINE
+   ========================================================= */
+
+.shelf-focus__line {
+  width:
+    100%;
+
+  height:
+    1px;
+
+  margin-top:
+    10px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--focus-color, #6E91B5),
+      transparent
+    );
+
+  opacity:
+    0.55;
+}
+
+
+/* =========================================================
+   21. PAGE TRANSITION
+   ========================================================= */
+
+.study-transition {
+  position:
+    fixed;
+
+  inset:
+    0;
+
+  z-index:
+    100;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  flex-direction:
+    column;
+
+  background:
+    #02070d;
+
+  opacity:
+    0;
+
+  visibility:
+    hidden;
+
+  pointer-events:
+    none;
+
+  transition:
+    opacity 0.22s ease,
+    visibility 0.22s ease;
+}
+
+.study-transition.is-active {
+  opacity:
+    1;
+
+  visibility:
+    visible;
+}
+
+
+/* transition category */
+
+.study-transition__small {
+  margin:
+    0
+    0
+    14px;
+
+  color:
+    var(--transition-color, #6E91B5);
+
+  font-size:
+    0.55rem;
+
+  letter-spacing:
+    0.35em;
+
+  opacity:
+    0;
+}
+
+.study-transition__title {
+  margin:
+    0;
+
+  color:
+    var(--study-text);
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    clamp(
+      2rem,
+      10vw,
+      4rem
+    );
+
+  font-weight:
+    400;
+
+  letter-spacing:
+    0.12em;
+
+  opacity:
+    0;
+}
+
+.study-transition.is-active
+.study-transition__small {
+  animation:
+    transitionText
+    0.5s
+    0.02s
+    ease
+    forwards;
+}
+
+.study-transition.is-active
+.study-transition__title {
+  animation:
+    transitionText
+    0.58s
+    0.08s
+    ease
+    forwards;
+}
+
+
+/* =========================================================
+   22. ANIMATIONS
+   ========================================================= */
+
+@keyframes shelfZoom {
+
+  0% {
+    opacity:
+      0;
+
+    transform:
+      scale(0.76);
+  }
+
+  45% {
+    opacity:
+      1;
+  }
+
+  100% {
+    opacity:
+      1;
+
+    transform:
+      scale(1);
+  }
+
+}
+
+
+@keyframes transitionText {
+
+  from {
+    opacity:
+      0;
+
+    transform:
+      translateY(10px);
+  }
+
+  to {
+    opacity:
+      1;
+
+    transform:
+      translateY(0);
+  }
+
+}
+
+
+/* =========================================================
+   23. DESKTOP
+========================================================= */
+
+@media (min-width: 700px) {
+
+  .study {
+    padding:
+      88px
+      28px
+      72px;
+  }
+
+
+  .study-home-link {
+    top:
+      24px;
+
+    left:
+      28px;
+  }
+
+
+  .study-header {
+    margin-bottom:
+      56px;
+  }
+
+
+  .study-header__title {
+    font-size:
+      clamp(
+        2.5rem,
+        5vw,
+        3.8rem
+      );
+  }
+
+
+  .shelf {
+    margin-bottom:
+      52px;
+
+    padding:
+      0
+      24px
+      16px;
+  }
+
+
+  .shelf__books {
+    min-height:
+      150px;
+
+    gap:
+      8px;
+  }
+
+
+  .study-book {
+    width:
+      34px;
+
+    height:
+      136px;
+  }
+
+
+  .study-book:nth-child(2n) {
+    height:
+      124px;
+  }
+
+
+  .study-book:nth-child(3n) {
+    height:
+      144px;
+  }
+
+
+  .study-book:nth-child(4n) {
+    height:
+      132px;
+  }
+
+
+  .study-book:nth-child(5n) {
+    height:
+      118px;
+  }
+
+}
+
+
+/* =========================================================
+   24. SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .study {
+    padding:
+      66px
+      16px
+      44px;
+  }
+
+
+  .study-header {
+    margin-bottom:
+      32px;
+  }
+
+
+  .study-header__title {
+    font-size:
+      1.9rem;
+  }
+
+
+  .shelf {
+    margin-bottom:
+      34px;
+
+    padding:
+      0
+      4px
+      10px;
+  }
+
+
+  .shelf__books {
+    min-height:
+      102px;
+
+    gap:
+      4px;
+  }
+
+
+  .study-book {
+    width:
+      22px;
+
+    height:
+      90px;
+  }
+
+
+  .study-book:nth-child(2n) {
+    height:
+      82px;
+  }
+
+
+  .study-book:nth-child(3n) {
+    height:
+      96px;
+  }
+
+
+  .study-book:nth-child(4n) {
+    height:
+      86px;
+  }
+
+
+  .study-book:nth-child(5n) {
+    height:
+      76px;
+  }
+
+}
+
+
+/* =========================================================
+   25. REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration:
+      0.01ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+    transition-duration:
+      0.01ms !important;
+  }
+
+}

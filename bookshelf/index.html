@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+<meta name="robots" content="noindex, nofollow, noarchive">
+
+  <title>Lies &amp; Ink — Bookshelf</title>
+
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/bookshelf.css">
+</head>
+
+<body class="bookshelf-page">
+
+  <main class="bookshelf">
+
+    <div
+      class="bookshelf__background"
+      aria-hidden="true"
+    ></div>
+
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="bookshelf-header">
+
+      <a
+        href="../study/index.html"
+        class="bookshelf-header__back"
+        id="backToStudy"
+      >
+        ‹ STUDY
+      </a>
+
+      <div class="bookshelf-header__title">
+
+        <p class="bookshelf-header__brand">
+          LIES &amp; INK
+        </p>
+
+        <h1 id="categoryName">
+          BOOKSHELF
+        </h1>
+
+      </div>
+
+    </header>
+
+
+    <!-- =========================
+         BOOKSHELF
+    ========================== -->
+
+    <section
+      class="bookshelf-view"
+      id="bookshelfView"
+      aria-label="作品一覧"
+    >
+
+      <div
+        class="bookshelf-track"
+        id="bookshelfTrack"
+      ></div>
+
+    </section>
+
+
+    <!-- =========================
+         WORK INFORMATION
+    ========================== -->
+
+    <section
+      class="work-info"
+      id="workInfo"
+      aria-label="作品紹介"
+    >
+
+      <p
+        class="work-info__number"
+        id="workNumber"
+      >
+        01
+      </p>
+
+      <h2
+        class="work-info__title"
+        id="workTitle"
+      >
+        —
+      </h2>
+
+
+      <!--
+        旧仕様との互換用。
+
+        今回は固定形式のメタ情報を使用しないため、
+        bookshelf.js側で非表示にします。
+      -->
+
+      <div
+        class="work-info__meta"
+        id="workMeta"
+        aria-hidden="true"
+        hidden
+      ></div>
+
+
+      <div
+        class="work-info__description"
+        id="workDescription"
+      ></div>
+
+
+      <button
+        class="work-info__open"
+        id="openWork"
+        type="button"
+      >
+        OPEN
+      </button>
+
+    </section>
+
+
+    <!-- =========================
+         SWIPE HINT
+    ========================== -->
+
+    <div
+      class="bookshelf-hint"
+      id="bookshelfHint"
+      aria-hidden="true"
+    >
+      <span>←</span>
+      <span>SWIPE</span>
+      <span>→</span>
+    </div>
+
+
+    <!-- =========================
+         TRANSITION
+    ========================== -->
+
+    <div
+      class="bookshelf-transition"
+      id="bookshelfTransition"
+      aria-hidden="true"
+    >
+
+      <div class="bookshelf-transition__book">
+
+        <span id="transitionTitle">
+          LIES &amp; INK
+        </span>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <script src="../js/data.js"></script>
+  <script src="../js/bookshelf.js"></script>
+
+</body>
+</html>

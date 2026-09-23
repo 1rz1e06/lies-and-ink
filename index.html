@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+<meta name="robots" content="noindex, nofollow, noarchive">
+
+  <title>Lies &amp; Ink</title>
+
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/home.css">
+</head>
+
+<body class="home-page">
+
+  <main class="home" id="home">
+
+    <!-- Background -->
+    <div
+      class="home__background"
+      aria-hidden="true"
+    ></div>
+
+
+    <!-- Main content -->
+    <div class="home__content">
+
+      <header class="site-title">
+
+        <p class="site-title__small">
+          LIES &amp; INK
+        </p>
+
+        <h1 class="site-title__main">
+          Lies &amp; Ink
+        </h1>
+
+      </header>
+
+
+      <!-- Book -->
+      <button
+        type="button"
+        class="book"
+        id="openBook"
+        aria-label="ENTER"
+      >
+
+        <img
+          src="./images/home-book.png"
+          alt=""
+          class="book__image"
+        >
+
+      </button>
+
+
+      <!-- Navigation -->
+      <nav
+        class="home-menu"
+        aria-label="Main navigation"
+      >
+
+        <button
+          type="button"
+          class="home-menu__button"
+          id="aboutButton"
+        >
+          ABOUT
+        </button>
+
+        <button
+          type="button"
+          class="home-menu__button"
+          id="enterButton"
+        >
+          ENTER
+        </button>
+
+      </nav>
+
+
+      <p class="home-message">
+        A private library of stories.
+      </p>
+
+    </div>
+
+
+    <!-- ABOUT -->
+    <section
+      class="about-overlay"
+      id="aboutOverlay"
+      aria-hidden="true"
+    >
+
+      <div class="about-panel">
+
+        <button
+          type="button"
+          class="about-close"
+          id="aboutClose"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        <p class="about-title__small">
+          LIES &amp; INK
+        </p>
+
+        <h2 class="about-title">
+          ABOUT
+        </h2>
+
+        <div class="about-text">
+
+          <p>
+            Lies &amp; Inkは隣国の成長するグループの×tr中心の小説サイトです。
+      </p>
+
+      <p>
+        このサイトに掲載されている文章はフィクションです。実在の人物や団体様とは一切関係ありません。また非常にセンシティブなジャンルゆえ、閲覧には十分お気を付けください。ご理解頂けた上でぱすのさいごに人数でお願いします。
+      </p>
+
+      <p>
+        スマートフォン観覧推奨。検索避け済み。
+      </p>
+
+      <p>
+        !)無断転載・複写行為・ソーシャルブックマーク・晒し行為等は禁止させて頂きます。
+      </p>
+
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          class="about-confirm"
+          id="aboutConfirm"
+        >
+          CLOSE
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- PASSWORD -->
+    <section
+      class="password-overlay"
+      id="passwordOverlay"
+      aria-hidden="true"
+    >
+
+      <div class="password-panel">
+
+        <button
+          type="button"
+          class="password-close"
+          id="passwordClose"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        <p class="password-title__small">
+          LIES &amp; INK
+        </p>
+
+        <h2 class="password-title">
+          ENTER
+        </h2>
+
+        <p class="password-description">
+          Please enter the password.
+        </p>
+
+        <form
+          class="password-form"
+          id="passwordForm"
+        >
+
+          <label
+            for="passwordInput"
+            class="password-label"
+          >
+            PASSWORD
+          </label>
+
+          <input
+            type="password"
+            id="passwordInput"
+            class="password-input"
+            autocomplete="off"
+            spellcheck="false"
+          >
+
+          <button
+            type="submit"
+            class="password-submit"
+          >
+            ENTER
+          </button>
+
+          <p
+            class="password-error"
+            id="passwordError"
+            aria-live="polite"
+          ></p>
+
+        </form>
+
+      </div>
+
+    </section>
+
+
+    <!-- Transition -->
+    <section
+      class="transition-screen"
+      id="transitionScreen"
+      aria-hidden="true"
+    >
+
+      <div class="transition-screen__inner">
+
+        <p class="transition-screen__small">
+          ENTERING
+        </p>
+
+        <p
+          class="transition-screen__title"
+          id="transitionTitle"
+        >
+          LIES &amp; INK
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script src="./js/home.js"></script>
+
+</body>
+</html>

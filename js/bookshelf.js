@@ -1,0 +1,1377 @@
+(() => {
+  "use strict";
+
+  const MAX_WORKS = 100;
+
+  const bookshelfElement =
+    document.querySelector(".bookshelf");
+
+  const trackElement =
+    document.getElementById("bookshelfTrack");
+
+  const categoryNameElement =
+    document.getElementById("categoryName");
+
+  const workInfoElement =
+    document.getElementById("workInfo");
+
+  const workNumberElement =
+    document.getElementById("workNumber");
+
+  const workTitleElement =
+    document.getElementById("workTitle");
+
+  const workMetaElement =
+    document.getElementById("workMeta");
+
+  const workDescriptionElement =
+    document.getElementById("workDescription");
+
+  const openWorkButton =
+    document.getElementById("openWork");
+
+  const hintElement =
+    document.getElementById("bookshelfHint");
+
+  const transitionElement =
+    document.getElementById("bookshelfTransition");
+
+  const transitionTitleElement =
+    document.getElementById("transitionTitle");
+
+  const backToStudyElement =
+    document.getElementById("backToStudy");
+
+
+  const categories =
+    window.LiesInk?.categories || [];
+
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const categoryId =
+    params.get("category");
+
+
+  const initialWork =
+    params.get("work");
+
+
+  let category = null;
+
+  let works = [];
+
+  let currentIndex = 0;
+
+  let touchStartX = 0;
+
+  let touchStartY = 0;
+
+
+  /* =========================================================
+     UTILITY
+     ========================================================= */
+
+  function padNumber(number) {
+    return String(number).padStart(2, "0");
+  }
+
+
+  function getCategory() {
+    return categories.find(
+      (item) => item.id === categoryId
+    );
+  }
+
+
+  function getWorkBaseUrl(workNumber) {
+    return (
+      `../work/${category.id}/${padNumber(workNumber)}`
+    );
+  }
+
+
+  /* =========================================================
+     STORY
+     ========================================================= */
+
+  async function fetchStory(workNumber) {
+
+    const url =
+      `${getWorkBaseUrl(workNumber)}/story.txt`;
+
+
+    try {
+
+      const response =
+        await fetch(url, {
+          cache: "no-store"
+        });
+
+
+      if (!response.ok) {
+        return null;
+      }
+
+
+      const text =
+        await response.text();
+
+
+      const normalized =
+        text
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+
+
+      const lines =
+        normalized.split("\n");
+
+
+      const titleIndex =
+        lines.findIndex(
+          (line) => line.trim() !== ""
+        );
+
+
+      if (titleIndex === -1) {
+        return null;
+      }
+
+
+      const title =
+        lines[titleIndex].trim();
+
+
+      return {
+        number: padNumber(workNumber),
+        title
+      };
+
+    } catch (error) {
+
+      console.warn(
+        `story.txt の読み込みに失敗しました: ${url}`,
+        error
+      );
+
+      return null;
+    }
+  }
+
+
+  /* =========================================================
+     INFO
+     
+     info.txt は自由記述。
+     固定の書式・項目は一切使用しない。
+  ========================================================= */
+
+  async function fetchInfo(workNumber) {
+
+    const url =
+      `${getWorkBaseUrl(workNumber)}/info.txt`;
+
+
+    try {
+
+      const response =
+        await fetch(url, {
+          cache: "no-store"
+        });
+
+
+      /*
+       * info.txt がない場合も
+       * 作品自体は表示する。
+       */
+
+      if (!response.ok) {
+        return "";
+      }
+
+
+      const text =
+        await response.text();
+
+
+      return text
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+
+    } catch (error) {
+
+      console.warn(
+        `info.txt の読み込みに失敗しました: ${url}`,
+        error
+      );
+
+      return "";
+    }
+  }
+
+
+  /* =========================================================
+     COVER IMAGE
+     
+     cover.jpg があるか確認。
+     なければ null。
+  ========================================================= */
+
+  async function checkCover(workNumber) {
+
+    const url =
+      `${getWorkBaseUrl(workNumber)}/cover.jpg`;
+
+
+    try {
+
+      const response =
+        await fetch(url, {
+          method: "HEAD",
+          cache: "no-store"
+        });
+
+
+      if (
+        response.ok &&
+        response.headers.get("content-type")?.startsWith(
+          "image/"
+        )
+      ) {
+        return url;
+      }
+
+
+      /*
+       * Cloudflare Pagesなどの環境によっては
+       * HEADのContent-Type判定が期待通りでない場合があるため、
+       * HTTP 200なら画像候補として扱う。
+       */
+
+      if (response.ok) {
+        return url;
+      }
+
+
+      return null;
+
+    } catch (error) {
+
+      return null;
+    }
+  }
+
+
+  /* =========================================================
+     WORK LOADING
+  ========================================================= */
+
+  async function loadWork(workNumber) {
+
+    const story =
+      await fetchStory(workNumber);
+
+
+    /*
+     * story.txt がない番号で終了。
+     */
+
+    if (!story) {
+      return null;
+    }
+
+
+    const [
+      info,
+      cover
+    ] = await Promise.all([
+      fetchInfo(workNumber),
+      checkCover(workNumber)
+    ]);
+
+
+    return {
+      number: story.number,
+      title: story.title,
+      info,
+      cover
+    };
+  }
+
+
+  /* =========================================================
+     LOAD ALL WORKS
+  ========================================================= */
+
+  async function loadWorks() {
+
+    const loadedWorks = [];
+
+
+    for (
+      let number = 1;
+      number <= MAX_WORKS;
+      number++
+    ) {
+
+      const work =
+        await loadWork(number);
+
+
+      /*
+       * 01 → 02 → 03 → …
+       *
+       * 最初にstory.txtがないところで終了。
+       */
+
+      if (!work) {
+        break;
+      }
+
+
+      loadedWorks.push(work);
+    }
+
+
+    return loadedWorks;
+  }
+
+
+  /* =========================================================
+     DESCRIPTION
+  ========================================================= */
+
+  function renderDescription(text) {
+
+    if (!workDescriptionElement) {
+      return;
+    }
+
+
+    workDescriptionElement.innerHTML = "";
+
+
+    if (!text) {
+
+      workDescriptionElement.hidden = true;
+
+      return;
+    }
+
+
+    workDescriptionElement.hidden = false;
+
+
+    /*
+     * 空行を段落として扱う。
+     */
+
+    const paragraphs =
+      text
+        .split(/\n\s*\n/)
+        .map(
+          (paragraph) =>
+            paragraph.trim()
+        )
+        .filter(Boolean);
+
+
+    paragraphs.forEach(
+      (paragraph) => {
+
+        const p =
+          document.createElement("p");
+
+
+        /*
+         * textContentを使用することで
+         * HTMLとして解釈されないようにする。
+         */
+
+        const lines =
+          paragraph.split("\n");
+
+
+        lines.forEach(
+          (line, index) => {
+
+            p.appendChild(
+              document.createTextNode(line)
+            );
+
+
+            if (
+              index <
+              lines.length - 1
+            ) {
+
+              p.appendChild(
+                document.createElement("br")
+              );
+
+            }
+
+          }
+        );
+
+
+        workDescriptionElement.appendChild(p);
+      }
+    );
+  }
+
+
+  /* =========================================================
+     WORK INFO
+  ========================================================= */
+
+  function renderWorkInfo(work) {
+
+    workNumberElement.textContent =
+      work.number;
+
+
+    workTitleElement.textContent =
+      work.title;
+
+
+    /*
+     * 固定形式のメタ情報は使用しない。
+     */
+
+    if (workMetaElement) {
+
+      workMetaElement.innerHTML = "";
+
+      workMetaElement.hidden = true;
+    }
+
+
+    renderDescription(work.info);
+  }
+
+
+  /* =========================================================
+     BOOK CREATION
+  ========================================================= */
+
+  function createBook(work, index) {
+
+    const book =
+      document.createElement("button");
+
+
+    book.type = "button";
+
+    book.className = "book";
+
+    book.dataset.index =
+      String(index);
+
+    book.dataset.work =
+      work.number;
+
+
+    /*
+     * 書影がある場合
+     */
+
+    if (work.cover) {
+
+      book.classList.add(
+        "book--has-cover"
+      );
+
+
+      const cover =
+        document.createElement("span");
+
+      cover.className =
+        "book__cover";
+
+
+      const image =
+        document.createElement("img");
+
+      image.className =
+        "book__cover-image";
+
+      image.src =
+        work.cover;
+
+      image.alt =
+        `${work.title} の書影`;
+
+      image.loading =
+        "lazy";
+
+      image.decoding =
+        "async";
+
+
+      /*
+       * 画像が読み込めなかった場合は
+       * 文字装丁へ戻す。
+       */
+
+      image.addEventListener(
+        "error",
+        () => {
+
+          book.classList.remove(
+            "book--has-cover"
+          );
+
+          cover.innerHTML =
+            createFallbackCover(
+              work
+            );
+
+        }
+      );
+
+
+      cover.appendChild(image);
+
+      book.appendChild(cover);
+
+    } else {
+
+      /*
+       * 書影がない場合
+       * 文字ベースの装丁。
+       */
+
+      const cover =
+        document.createElement("span");
+
+      cover.className =
+        "book__cover";
+
+      cover.innerHTML =
+        createFallbackCover(work);
+
+      book.appendChild(cover);
+    }
+
+
+    /*
+     * 背表紙番号
+     */
+
+    const spineNumber =
+      document.createElement("span");
+
+    spineNumber.className =
+      "book__spine-number";
+
+    spineNumber.textContent =
+      work.number;
+
+
+    book.appendChild(spineNumber);
+
+
+    /*
+     * クリック
+     */
+
+    book.addEventListener(
+      "click",
+      () => {
+        selectWork(index);
+      }
+    );
+
+
+    return book;
+  }
+
+
+  /* =========================================================
+     FALLBACK COVER
+  ========================================================= */
+
+  function createFallbackCover(work) {
+
+    const wrapper =
+      document.createElement("span");
+
+    wrapper.className =
+      "book__cover-fallback";
+
+
+    const number =
+      document.createElement("span");
+
+    number.className =
+      "book__cover-number";
+
+    number.textContent =
+      work.number;
+
+
+    const title =
+      document.createElement("span");
+
+    title.className =
+      "book__cover-title";
+
+    title.textContent =
+      work.title;
+
+
+    wrapper.appendChild(number);
+
+    wrapper.appendChild(title);
+
+
+    /*
+     * outerHTMLを返すのではなく、
+     * DOM構築用の文字列として使用。
+     *
+     * titleはinnerHTMLではなくtextContentで
+     * 設定しているので安全。
+     */
+
+    return wrapper.outerHTML;
+  }
+
+
+  /* =========================================================
+     RENDER BOOKS
+  ========================================================= */
+
+  function renderBooks() {
+
+    trackElement.innerHTML = "";
+
+
+    works.forEach(
+      (work, index) => {
+
+        const book =
+          createBook(
+            work,
+            index
+          );
+
+
+        trackElement.appendChild(book);
+      }
+    );
+  }
+
+
+  /* =========================================================
+     CENTER BOOK
+  ========================================================= */
+
+  function centerCurrentBook(
+    instant = false
+  ) {
+
+    const books =
+      trackElement.querySelectorAll(
+        ".book"
+      );
+
+
+    if (!books.length) {
+      return;
+    }
+
+
+    const currentBook =
+      books[currentIndex];
+
+
+    if (!currentBook) {
+      return;
+    }
+
+
+    const viewport =
+      document.querySelector(
+        ".bookshelf-view"
+      );
+
+
+    if (!viewport) {
+      return;
+    }
+
+
+    const viewportRect =
+      viewport.getBoundingClientRect();
+
+
+    const bookRect =
+      currentBook.getBoundingClientRect();
+
+
+    const currentCenter =
+      bookRect.left +
+      bookRect.width / 2;
+
+
+    const viewportCenter =
+      viewportRect.left +
+      viewportRect.width / 2;
+
+
+    const difference =
+      viewportCenter -
+      currentCenter;
+
+
+    let currentX = 0;
+
+
+    const currentTransform =
+      getComputedStyle(
+        trackElement
+      ).transform;
+
+
+    if (
+      currentTransform &&
+      currentTransform !== "none"
+    ) {
+
+      try {
+
+        const matrix =
+          new DOMMatrix(
+            currentTransform
+          );
+
+        currentX =
+          matrix.m41;
+
+      } catch (error) {
+
+        currentX = 0;
+      }
+    }
+
+
+    const nextX =
+      currentX + difference;
+
+
+    if (instant) {
+
+      trackElement.classList.add(
+        "is-instant"
+      );
+
+    } else {
+
+      trackElement.classList.remove(
+        "is-instant"
+      );
+
+    }
+
+
+    trackElement.style.transform =
+      `translate3d(${nextX}px, 0, 0)`;
+
+
+    if (instant) {
+
+      requestAnimationFrame(() => {
+
+        trackElement.classList.remove(
+          "is-instant"
+        );
+
+      });
+
+    }
+  }
+
+
+  /* =========================================================
+     SELECT WORK
+  ========================================================= */
+
+  function selectWork(
+    index,
+    instant = false
+  ) {
+
+    if (!works.length) {
+      return;
+    }
+
+
+    if (index < 0) {
+      index = 0;
+    }
+
+
+    if (index >= works.length) {
+      index =
+        works.length - 1;
+    }
+
+
+    currentIndex =
+      index;
+
+
+    const books =
+      trackElement.querySelectorAll(
+        ".book"
+      );
+
+
+    books.forEach(
+      (book, bookIndex) => {
+
+        book.classList.toggle(
+          "is-center",
+          bookIndex === currentIndex
+        );
+
+      }
+    );
+
+
+    const work =
+      works[currentIndex];
+
+
+    renderWorkInfo(work);
+
+
+    centerCurrentBook(
+      instant
+    );
+
+
+    updateHint();
+
+
+    if (workInfoElement) {
+
+      workInfoElement.classList.add(
+        "is-visible"
+      );
+
+    }
+  }
+
+
+  /* =========================================================
+     MOVE
+  ========================================================= */
+
+  function moveWork(direction) {
+
+    if (!works.length) {
+      return;
+    }
+
+
+    const nextIndex =
+      currentIndex + direction;
+
+
+    if (
+      nextIndex < 0 ||
+      nextIndex >= works.length
+    ) {
+      return;
+    }
+
+
+    selectWork(nextIndex);
+  }
+
+
+  /* =========================================================
+     HINT
+  ========================================================= */
+
+  function updateHint() {
+
+    if (!hintElement) {
+      return;
+    }
+
+
+    if (works.length <= 1) {
+
+      hintElement.hidden = true;
+
+      return;
+    }
+
+
+    hintElement.hidden = false;
+  }
+
+
+  /* =========================================================
+     OPEN WORK
+  ========================================================= */
+
+  function openCurrentWork() {
+
+    if (!works.length) {
+      return;
+    }
+
+
+    const work =
+      works[currentIndex];
+
+
+    const url =
+      `../work/index.html` +
+      `?category=${encodeURIComponent(category.id)}` +
+      `&work=${encodeURIComponent(work.number)}`;
+
+
+    showTransition(
+      work.title
+    );
+
+
+    window.setTimeout(
+      () => {
+        window.location.href = url;
+      },
+      450
+    );
+  }
+
+
+  /* =========================================================
+     TRANSITION
+  ========================================================= */
+
+  function showTransition(title) {
+
+    if (!transitionElement) {
+      return;
+    }
+
+
+    if (transitionTitleElement) {
+
+      transitionTitleElement.textContent =
+        title;
+    }
+
+
+    transitionElement.classList.add(
+      "is-visible"
+    );
+  }
+
+
+  /* =========================================================
+     BACK TO STUDY
+  ========================================================= */
+
+  function setupBackButton() {
+
+    if (
+      !backToStudyElement ||
+      !category
+    ) {
+      return;
+    }
+
+
+    backToStudyElement.href =
+      `../study/index.html?category=${encodeURIComponent(category.id)}`;
+  }
+
+
+  /* =========================================================
+     TOUCH
+  ========================================================= */
+
+  function setupTouchEvents() {
+
+    const viewport =
+      document.querySelector(
+        ".bookshelf-view"
+      );
+
+
+    if (!viewport) {
+      return;
+    }
+
+
+    viewport.addEventListener(
+      "touchstart",
+      (event) => {
+
+        const touch =
+          event.touches[0];
+
+
+        touchStartX =
+          touch.clientX;
+
+
+        touchStartY =
+          touch.clientY;
+
+      },
+      {
+        passive: true
+      }
+    );
+
+
+    viewport.addEventListener(
+      "touchend",
+      (event) => {
+
+        const touch =
+          event.changedTouches[0];
+
+
+        const deltaX =
+          touch.clientX -
+          touchStartX;
+
+
+        const deltaY =
+          touch.clientY -
+          touchStartY;
+
+
+        /*
+         * 縦スクロールの操作は
+         * スワイプとして扱わない。
+         */
+
+        if (
+          Math.abs(deltaX) < 40 ||
+          Math.abs(deltaX) <
+            Math.abs(deltaY)
+        ) {
+          return;
+        }
+
+
+        if (deltaX < 0) {
+
+          moveWork(1);
+
+        } else {
+
+          moveWork(-1);
+        }
+
+      },
+      {
+        passive: true
+      }
+    );
+  }
+
+
+  /* =========================================================
+     KEYBOARD
+  ========================================================= */
+
+  function setupKeyboardEvents() {
+
+    document.addEventListener(
+      "keydown",
+      (event) => {
+
+        if (
+          event.key === "ArrowLeft"
+        ) {
+
+          event.preventDefault();
+
+          moveWork(-1);
+
+        }
+
+
+        if (
+          event.key === "ArrowRight"
+        ) {
+
+          event.preventDefault();
+
+          moveWork(1);
+
+        }
+
+
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+
+          const activeElement =
+            document.activeElement;
+
+
+          if (
+            activeElement ===
+              document.body ||
+            activeElement ===
+              trackElement
+          ) {
+
+            event.preventDefault();
+
+            openCurrentWork();
+          }
+        }
+
+      }
+    );
+  }
+
+
+  /* =========================================================
+     OPEN BUTTON
+  ========================================================= */
+
+  function setupOpenButton() {
+
+    if (!openWorkButton) {
+      return;
+    }
+
+
+    openWorkButton.addEventListener(
+      "click",
+      openCurrentWork
+    );
+  }
+
+
+  /* =========================================================
+     RESIZE
+  ========================================================= */
+
+  function setupResize() {
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        centerCurrentBook(
+          true
+        );
+
+      }
+    );
+  }
+
+
+  /* =========================================================
+     CATEGORY COLOR
+  ========================================================= */
+
+  function setupCategoryColor() {
+
+    if (
+      !category ||
+      !bookshelfElement
+    ) {
+      return;
+    }
+
+
+    bookshelfElement.style.setProperty(
+      "--category-color",
+      category.color
+    );
+  }
+
+
+  /* =========================================================
+     EMPTY
+  ========================================================= */
+
+  function renderEmpty() {
+
+    trackElement.innerHTML = "";
+
+
+    const empty =
+      document.createElement("p");
+
+
+    empty.className =
+      "bookshelf-empty";
+
+
+    empty.textContent =
+      "NO BOOK";
+
+
+    trackElement.appendChild(
+      empty
+    );
+
+
+    if (workInfoElement) {
+
+      workInfoElement.classList.remove(
+        "is-visible"
+      );
+    }
+
+
+    if (hintElement) {
+
+      hintElement.hidden = true;
+    }
+  }
+
+
+  /* =========================================================
+     INITIAL INDEX
+  ========================================================= */
+
+  function getInitialIndex() {
+
+    if (!initialWork) {
+      return 0;
+    }
+
+
+    const normalized =
+      padNumber(
+        Number(initialWork)
+      );
+
+
+    const index =
+      works.findIndex(
+        (work) =>
+          work.number === normalized
+      );
+
+
+    return index >= 0
+      ? index
+      : 0;
+  }
+
+
+  /* =========================================================
+     INITIALIZE
+  ========================================================= */
+
+  async function initialize() {
+
+    if (
+      !trackElement ||
+      !categoryNameElement
+    ) {
+      return;
+    }
+
+
+    category =
+      getCategory();
+
+
+    if (!category) {
+
+      categoryNameElement.textContent =
+        "BOOKSHELF";
+
+
+      renderEmpty();
+
+      return;
+    }
+
+
+    categoryNameElement.textContent =
+      category.name;
+
+
+    setupCategoryColor();
+
+    setupBackButton();
+
+
+    /*
+     * 作品を取得
+     */
+
+    works =
+      await loadWorks();
+
+
+    if (!works.length) {
+
+      renderEmpty();
+
+      return;
+    }
+
+
+    /*
+     * 本を描画
+     */
+
+    renderBooks();
+
+
+    /*
+     * URLのwork=02などを
+     * 初期選択位置に反映。
+     */
+
+    currentIndex =
+      getInitialIndex();
+
+
+    /*
+     * DOM描画後に中央配置。
+     */
+
+    requestAnimationFrame(
+      () => {
+
+        selectWork(
+          currentIndex,
+          true
+        );
+
+      }
+    );
+
+
+    setupTouchEvents();
+
+    setupKeyboardEvents();
+
+    setupOpenButton();
+
+    setupResize();
+  }
+
+
+  initialize();
+
+})();
