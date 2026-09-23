@@ -15,28 +15,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const workInfo = document.getElementById("workInfo");
   const workMeta = document.getElementById("workMeta");
-  const workDescription = document.getElementById("workDescription");
+  const workDescription =
+    document.getElementById("workDescription");
 
-  const workPageView = document.getElementById("workPageView");
-  const workBody = document.getElementById("workBody");
+  const workPageView =
+    document.getElementById("workPageView");
 
-  const currentPage = document.getElementById("currentPage");
-  const totalPages = document.getElementById("totalPages");
+  const workBody =
+    document.getElementById("workBody");
 
-  const prevPage = document.getElementById("prevPage");
-  const nextPage = document.getElementById("nextPage");
+  const currentPage =
+    document.getElementById("currentPage");
 
-  const backToBookshelf = document.getElementById("backToBookshelf");
+  const totalPages =
+    document.getElementById("totalPages");
+
+  const prevPage =
+    document.getElementById("prevPage");
+
+  const nextPage =
+    document.getElementById("nextPage");
+
+  const backToBookshelf =
+    document.getElementById("backToBookshelf");
+
   const backToBookshelfFooter =
     document.getElementById("backToBookshelfFooter");
 
-  const loading = document.getElementById("workLoading");
-  const loadingText = document.getElementById("workLoadingText");
+  const loading =
+    document.getElementById("workLoading");
 
-  const params = new URLSearchParams(window.location.search);
+  const loadingText =
+    document.getElementById("workLoadingText");
 
-  const categoryId = params.get("category");
-  const workId = params.get("work");
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const categoryId =
+    params.get("category");
+
+  const workId =
+    params.get("work");
 
   let workData = null;
   let pages = [];
@@ -47,7 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
      ======================================================= */
 
   function getCategory() {
-    if (!window.LiesInk || !Array.isArray(window.LiesInk.categories)) {
+    if (
+      !window.LiesInk ||
+      !Array.isArray(window.LiesInk.categories)
+    ) {
       return null;
     }
 
@@ -60,13 +82,22 @@ document.addEventListener("DOMContentLoaded", () => {
      Loading
      ======================================================= */
 
-  function setLoading(isLoading, message = "LOADING") {
+  function setLoading(
+    isLoading,
+    message = "LOADING"
+  ) {
     if (!work) return;
 
-    work.classList.toggle("is-loading", isLoading);
+    work.classList.toggle(
+      "is-loading",
+      isLoading
+    );
 
     if (loading) {
-      loading.setAttribute("aria-hidden", String(!isLoading));
+      loading.setAttribute(
+        "aria-hidden",
+        String(!isLoading)
+      );
     }
 
     if (loadingText) {
@@ -78,21 +109,31 @@ document.addEventListener("DOMContentLoaded", () => {
      Fetch
      ======================================================= */
 
-  async function fetchText(url, timeout = 15000) {
-    const controller = new AbortController();
+  async function fetchText(
+    url,
+    timeout = 15000
+  ) {
+    const controller =
+      new AbortController();
 
-    const timer = window.setTimeout(() => {
-      controller.abort();
-    }, timeout);
+    const timer =
+      window.setTimeout(() => {
+        controller.abort();
+      }, timeout);
 
     try {
-      const response = await fetch(`${url}?v=${Date.now()}`, {
-        cache: "no-store",
-        signal: controller.signal
-      });
+      const response = await fetch(
+        `${url}?v=${Date.now()}`,
+        {
+          cache: "no-store",
+          signal: controller.signal
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(
+          `HTTP ${response.status}`
+        );
       }
 
       return await response.text();
@@ -105,7 +146,10 @@ document.addEventListener("DOMContentLoaded", () => {
      Image Check
      ======================================================= */
 
-  function checkImage(url, timeout = 5000) {
+  function checkImage(
+    url,
+    timeout = 5000
+  ) {
     return new Promise((resolve) => {
       const image = new Image();
 
@@ -119,14 +163,21 @@ document.addEventListener("DOMContentLoaded", () => {
         resolve(result);
       };
 
-      const timer = window.setTimeout(() => {
+      const timer =
+        window.setTimeout(() => {
+          finish(false);
+        }, timeout);
+
+      image.onload = () => {
+        finish(true);
+      };
+
+      image.onerror = () => {
         finish(false);
-      }, timeout);
+      };
 
-      image.onload = () => finish(true);
-      image.onerror = () => finish(false);
-
-      image.src = `${url}?v=${Date.now()}`;
+      image.src =
+        `${url}?v=${Date.now()}`;
     });
   }
 
@@ -136,19 +187,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function parseStory(text) {
     /*
-     * 最初の非空行をタイトルとして扱う。
+     * 改行コードだけ統一する。
      *
-     * ここでは trim() を使わない。
-     * 本文の全角スペースを保持するため。
+     * 本文の文字自体は変更しない。
+     * 特に全角スペース「　」は保持する。
      */
 
-    const normalized = text.replace(/\r\n/g, "\n");
+    const normalized =
+      text.replace(/\r\n/g, "\n");
 
-    const lines = normalized.split("\n");
+    const lines =
+      normalized.split("\n");
 
     let titleIndex = -1;
 
-    for (let i = 0; i < lines.length; i += 1) {
+    /*
+     * 最初の非空行をタイトルとする。
+     */
+    for (
+      let i = 0;
+      i < lines.length;
+      i += 1
+    ) {
       if (lines[i].trim() !== "") {
         titleIndex = i;
         break;
@@ -162,23 +222,27 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
 
-    const title = lines[titleIndex].trim();
-
     /*
-     * タイトル以降は本文。
+     * タイトルだけは前後の空白を整理する。
      *
-     * ここでも .trim() を使わない。
-     * 特に本文1行目の
-     *
-     * 「　窓の外は、まだ夜だった。」
-     *
-     * の全角スペースを残す。
+     * タイトルの字下げを本文と同じように
+     * 保持する必要はないため、ここだけtrim()を使用。
      */
-    const bodyLines = lines.slice(titleIndex + 1);
+    const title =
+      lines[titleIndex].trim();
 
     /*
-     * タイトル直後の空行だけを削除する。
-     * ただし本文そのものの行頭スペースは変更しない。
+     * タイトル以降を本文にする。
+     *
+     * ここから先は文字を変更しない。
+     */
+    const bodyLines =
+      lines.slice(titleIndex + 1);
+
+    /*
+     * タイトル直後にある完全な空行だけ削除。
+     *
+     * 「　文章」のような行は削除しない。
      */
     while (
       bodyLines.length > 0 &&
@@ -188,12 +252,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /*
-     * 本文末尾の完全な空行だけを削除する。
-     * 文章行そのものは変更しない。
+     * 本文末尾にある完全な空行だけ削除。
+     *
+     * 本文そのものの文字は変更しない。
      */
     while (
       bodyLines.length > 0 &&
-      bodyLines[bodyLines.length - 1].trim() === ""
+      bodyLines[
+        bodyLines.length - 1
+      ].trim() === ""
     ) {
       bodyLines.pop();
     }
@@ -208,7 +275,10 @@ document.addEventListener("DOMContentLoaded", () => {
      Long Paragraph Split
      ======================================================= */
 
-  function splitLongParagraph(paragraph, limit = 7000) {
+  function splitLongParagraph(
+    paragraph,
+    limit = 7000
+  ) {
     if (paragraph.length <= limit) {
       return [paragraph];
     }
@@ -217,26 +287,46 @@ document.addEventListener("DOMContentLoaded", () => {
     let remaining = paragraph;
 
     while (remaining.length > limit) {
-      let cut = remaining.lastIndexOf("。", limit);
+      let cut =
+        remaining.lastIndexOf(
+          "。",
+          limit
+        );
 
-      if (cut < Math.floor(limit * 0.5)) {
-        cut = remaining.lastIndexOf("、", limit);
+      if (
+        cut <
+        Math.floor(limit * 0.5)
+      ) {
+        cut =
+          remaining.lastIndexOf(
+            "、",
+            limit
+          );
       }
 
-      if (cut < Math.floor(limit * 0.5)) {
+      if (
+        cut <
+        Math.floor(limit * 0.5)
+      ) {
         cut = limit - 1;
       }
 
-      const chunk = remaining.slice(0, cut + 1);
-
       /*
-       * ここでも trim() は使わない。
-       *
-       * chunk の先頭にある全角スペースを保持する。
+       * 切り出した文字列を
+       * 一切加工せず保存する。
        */
+      const chunk =
+        remaining.slice(
+          0,
+          cut + 1
+        );
+
       result.push(chunk);
 
-      remaining = remaining.slice(cut + 1);
+      remaining =
+        remaining.slice(
+          cut + 1
+        );
     }
 
     if (remaining.length > 0) {
@@ -250,56 +340,74 @@ document.addEventListener("DOMContentLoaded", () => {
      Auto Page Split
      ======================================================= */
 
-  function autoSplitPages(body, limit = 7000) {
+  function autoSplitPages(
+    body,
+    limit = 7000
+  ) {
     /*
-     * 空行を「段落の区切り」として扱う。
+     * 空行を段落の区切りにする。
      *
-     * split(/\n\s*\n/) では、段落の先頭にある
-     * 全角スペースまで問題になる可能性があるため、
-     * 改行そのものを基準にする。
+     * 全角スペースは区切り判定には影響するが、
+     * 実際の文字列からは削除しない。
      */
-
-    const paragraphs = body.split(/\n{2,}/);
+    const paragraphs =
+      body.split(/\n{2,}/);
 
     const result = [];
     let current = "";
 
-    paragraphs.forEach((paragraph) => {
-      /*
-       * 完全に空の段落だけを無視する。
-       *
-       * paragraph.trim() === "" は判定だけに使用。
-       * 実際に格納する文字列には trim() をかけない。
-       */
-      if (paragraph.trim() === "") {
-        return;
-      }
-
-      const pieces = splitLongParagraph(paragraph, limit);
-
-      pieces.forEach((piece) => {
-        const candidate =
-          current.length === 0
-            ? piece
-            : `${current}\n\n${piece}`;
-
-        if (candidate.length <= limit) {
-          current = candidate;
-        } else {
-          if (current.length > 0) {
-            result.push(current);
-          }
-
-          current = piece;
+    paragraphs.forEach(
+      (paragraph) => {
+        /*
+         * 空段落かどうかの判定だけ。
+         *
+         * paragraphそのものにはtrim()をかけない。
+         */
+        if (
+          paragraph.trim() === ""
+        ) {
+          return;
         }
-      });
-    });
+
+        const pieces =
+          splitLongParagraph(
+            paragraph,
+            limit
+          );
+
+        pieces.forEach(
+          (piece) => {
+            const candidate =
+              current.length === 0
+                ? piece
+                : `${current}\n\n${piece}`;
+
+            if (
+              candidate.length <=
+              limit
+            ) {
+              current = candidate;
+            } else {
+              if (
+                current.length > 0
+              ) {
+                result.push(current);
+              }
+
+              current = piece;
+            }
+          }
+        );
+      }
+    );
 
     if (current.length > 0) {
       result.push(current);
     }
 
-    return result.length > 0 ? result : [""];
+    return result.length > 0
+      ? result
+      : [""];
   }
 
   /* =======================================================
@@ -312,26 +420,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /*
-     * ===PAGE=== が書かれている場合は、
-     * 作者指定のページ分けを優先する。
+     * ===PAGE=== がある場合。
+     *
+     * 区切り文字そのものだけ削除し、
+     * 各ページの本文にはtrim()をかけない。
      */
-    if (body.includes("===PAGE===")) {
-      const manualPages = body.split(/\n?\s*===PAGE===\s*\n?/);
+    if (
+      body.includes("===PAGE===")
+    ) {
+      const manualPages =
+        body.split(
+          /\n?\s*===PAGE===\s*\n?/
+        );
 
       return manualPages
         .map((page) => {
           /*
-           * ページ全体の trim() は絶対にしない。
+           * 末尾の改行だけ整理。
            *
-           * 末尾の改行だけ整理する。
+           * 先頭の全角スペースはそのまま。
            */
-          return page.replace(/\n+$/, "");
+          return page.replace(
+            /\n+$/,
+            ""
+          );
         })
-        .filter((page) => page.trim() !== "");
+        .filter(
+          (page) =>
+            page.trim() !== ""
+        );
     }
 
     /*
-     * ===PAGE=== がない場合は自動分割。
+     * ===PAGE=== がない場合。
      */
     return autoSplitPages(body);
   }
@@ -341,29 +462,49 @@ document.addEventListener("DOMContentLoaded", () => {
      ======================================================= */
 
   async function loadWork() {
-    const category = getCategory();
+    const category =
+      getCategory();
 
     if (!category) {
-      throw new Error("CATEGORY_NOT_FOUND");
+      throw new Error(
+        "CATEGORY_NOT_FOUND"
+      );
     }
 
-    if (!workId || !/^\d+$/.test(workId)) {
-      throw new Error("WORK_NOT_FOUND");
+    if (
+      !workId ||
+      !/^\d+$/.test(workId)
+    ) {
+      throw new Error(
+        "WORK_NOT_FOUND"
+      );
     }
 
-    const number = String(Number(workId)).padStart(2, "0");
+    const number =
+      String(Number(workId))
+        .padStart(2, "0");
 
-    const basePath = `../work/${category.id}/${number}`;
+    const basePath =
+      `../work/${category.id}/${number}`;
 
     /*
      * story.txt は必須。
      */
-    const storyText = await fetchText(`${basePath}/story.txt`);
+    const storyText =
+      await fetchText(
+        `${basePath}/story.txt`
+      );
 
-    const story = parseStory(storyText);
+    const story =
+      parseStory(storyText);
 
-    if (!story.title && !story.body) {
-      throw new Error("EMPTY_STORY");
+    if (
+      !story.title &&
+      !story.body
+    ) {
+      throw new Error(
+        "EMPTY_STORY"
+      );
     }
 
     /*
@@ -372,13 +513,20 @@ document.addEventListener("DOMContentLoaded", () => {
     let info = "";
 
     try {
-      info = await fetchText(`${basePath}/info.txt`);
+      info =
+        await fetchText(
+          `${basePath}/info.txt`
+        );
 
       /*
-       * 説明文については末尾の改行だけ整理。
+       * 末尾の改行だけ整理。
+       *
        * 先頭の全角スペースは保持。
        */
-      info = info.replace(/\n+$/, "");
+      info = info.replace(
+        /\n+$/,
+        ""
+      );
     } catch (error) {
       info = "";
     }
@@ -386,8 +534,13 @@ document.addEventListener("DOMContentLoaded", () => {
     /*
      * cover.jpg は任意。
      */
-    const coverPath = `${basePath}/cover.jpg`;
-    const hasCover = await checkImage(coverPath);
+    const coverPath =
+      `${basePath}/cover.jpg`;
+
+    const hasCover =
+      await checkImage(
+        coverPath
+      );
 
     return {
       category,
@@ -395,7 +548,9 @@ document.addEventListener("DOMContentLoaded", () => {
       title: story.title,
       body: story.body,
       info,
-      cover: hasCover ? coverPath : null
+      cover: hasCover
+        ? coverPath
+        : null
     };
   }
 
@@ -411,8 +566,11 @@ document.addEventListener("DOMContentLoaded", () => {
       data.category.color
     );
 
-    workNumber.textContent = data.number;
-    workTitle.textContent = data.title;
+    workNumber.textContent =
+      data.number;
+
+    workTitle.textContent =
+      data.title;
 
     /* -------------------------------------------------------
        Cover
@@ -420,22 +578,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (data.cover) {
       workCover.hidden = false;
-      workCover.classList.add("has-cover");
 
-      workCoverImage.alt = data.title;
-      workCoverImage.src = data.cover;
+      workCover.classList.add(
+        "has-cover"
+      );
 
-      window.requestAnimationFrame(() => {
-        workCover.classList.add("is-visible");
-      });
+      workCoverImage.alt =
+        data.title;
+
+      workCoverImage.src =
+        data.cover;
+
+      window.requestAnimationFrame(
+        () => {
+          workCover.classList.add(
+            "is-visible"
+          );
+        }
+      );
     } else {
       workCover.hidden = true;
+
       workCover.classList.remove(
         "has-cover",
         "is-visible"
       );
 
-      workCoverImage.removeAttribute("src");
+      workCoverImage.removeAttribute(
+        "src"
+      );
+
       workCoverImage.alt = "";
     }
 
@@ -443,22 +615,35 @@ document.addEventListener("DOMContentLoaded", () => {
        Info
        ------------------------------------------------------- */
 
-    if (data.info.trim() !== "") {
+    if (
+      data.info.trim() !== ""
+    ) {
       workInfo.hidden = false;
 
       /*
-       * innerHTML ではなく textContent。
-       * 説明文中の文字をそのまま表示。
+       * textContentを使用。
+       *
+       * info.txt内の文字をそのまま表示する。
        */
-      workDescription.textContent = data.info;
+      workDescription.textContent =
+        data.info;
 
-      window.requestAnimationFrame(() => {
-        workInfo.classList.add("is-visible");
-      });
+      window.requestAnimationFrame(
+        () => {
+          workInfo.classList.add(
+            "is-visible"
+          );
+        }
+      );
     } else {
       workInfo.hidden = true;
-      workInfo.classList.remove("is-visible");
-      workDescription.textContent = "";
+
+      workInfo.classList.remove(
+        "is-visible"
+      );
+
+      workDescription.textContent =
+        "";
     }
 
     /* -------------------------------------------------------
@@ -466,12 +651,18 @@ document.addEventListener("DOMContentLoaded", () => {
        ------------------------------------------------------- */
 
     const titleBlock =
-      document.querySelector(".work-title");
+      document.querySelector(
+        ".work-title"
+      );
 
     if (titleBlock) {
-      window.requestAnimationFrame(() => {
-        titleBlock.classList.add("is-visible");
-      });
+      window.requestAnimationFrame(
+        () => {
+          titleBlock.classList.add(
+            "is-visible"
+          );
+        }
+      );
     }
   }
 
@@ -479,60 +670,99 @@ document.addEventListener("DOMContentLoaded", () => {
      Render Page
      ======================================================= */
 
-  function renderCurrentPage(resetScroll = true) {
-    if (!workBody || !workPageView) return;
+  function renderCurrentPage(
+    resetScroll = true
+  ) {
+    if (
+      !workBody ||
+      !workPageView
+    ) {
+      return;
+    }
 
-    const page = pages[pageIndex] || "";
+    const page =
+      pages[pageIndex] || "";
 
     /*
-     * いったん空にする。
+     * 一度本文を空にする。
      */
     workBody.replaceChildren();
 
     /*
-     * 本文を段落単位で表示。
-     *
-     * 重要：
-     * page.split() した文字列に trim() をかけない。
-     * そのまま textContent に入れることで、
-     * 行頭の全角スペースを保持する。
+     * 空行を段落の区切りとして使用。
      */
-    const paragraphs = page.split(/\n{2,}/);
+    const paragraphs =
+      page.split(/\n{2,}/);
 
-    paragraphs.forEach((paragraphText) => {
-      if (paragraphText.trim() === "") {
-        return;
+    paragraphs.forEach(
+      (paragraphText) => {
+        /*
+         * 空段落かどうかの判定だけ。
+         *
+         * ここでtrim()した文字列を
+         * textContentへ入れてはいけない。
+         */
+        if (
+          paragraphText.trim() === ""
+        ) {
+          return;
+        }
+
+        const paragraph =
+          document.createElement("p");
+
+        /*
+         * ここが重要。
+         *
+         * story.txtの文字列を
+         * 一切加工せず、そのまま表示する。
+         *
+         * 例えばstory.txtが
+         *
+         * 「　窓の外は、まだ夜だった。」
+         *
+         * なら、その「　」もそのまま
+         * textContentへ渡される。
+         */
+        paragraph.textContent =
+          paragraphText;
+
+        workBody.appendChild(
+          paragraph
+        );
       }
+    );
 
-      const paragraph = document.createElement("p");
+    currentPage.textContent =
+      String(pageIndex + 1);
 
-      /*
-       * textContent を使用。
-       * HTMLとして解釈させず、
-       * 全角スペース・改行を保持する。
-       */
-      paragraph.textContent = paragraphText;
+    totalPages.textContent =
+      String(pages.length);
 
-      workBody.appendChild(paragraph);
-    });
+    prevPage.disabled =
+      pageIndex <= 0;
 
-    currentPage.textContent = String(pageIndex + 1);
-    totalPages.textContent = String(pages.length);
-
-    prevPage.disabled = pageIndex <= 0;
-    nextPage.disabled = pageIndex >= pages.length - 1;
+    nextPage.disabled =
+      pageIndex >=
+      pages.length - 1;
 
     if (resetScroll) {
       workPageView.scrollTop = 0;
     }
 
-    workPageView.classList.add("is-visible");
+    workPageView.classList.add(
+      "is-visible"
+    );
 
     const indicator =
-      document.getElementById("workPageIndicator");
+      document.getElementById(
+        "workPageIndicator"
+      );
 
     if (indicator) {
-      indicator.classList.add("is-visible");
+      indicator.classList.add(
+        "is-visible"
+      );
     }
   }
 
@@ -541,7 +771,10 @@ document.addEventListener("DOMContentLoaded", () => {
      ======================================================= */
 
   function goToPage(index) {
-    if (index < 0 || index >= pages.length) {
+    if (
+      index < 0 ||
+      index >= pages.length
+    ) {
       return;
     }
 
@@ -550,27 +783,48 @@ document.addEventListener("DOMContentLoaded", () => {
     renderCurrentPage(true);
   }
 
-  prevPage.addEventListener("click", () => {
-    goToPage(pageIndex - 1);
-  });
+  prevPage.addEventListener(
+    "click",
+    () => {
+      goToPage(
+        pageIndex - 1
+      );
+    }
+  );
 
-  nextPage.addEventListener("click", () => {
-    goToPage(pageIndex + 1);
-  });
+  nextPage.addEventListener(
+    "click",
+    () => {
+      goToPage(
+        pageIndex + 1
+      );
+    }
+  );
 
   /* =======================================================
      Keyboard Navigation
      ======================================================= */
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft") {
-      goToPage(pageIndex - 1);
-    }
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (
+        event.key === "ArrowLeft"
+      ) {
+        goToPage(
+          pageIndex - 1
+        );
+      }
 
-    if (event.key === "ArrowRight") {
-      goToPage(pageIndex + 1);
+      if (
+        event.key === "ArrowRight"
+      ) {
+        goToPage(
+          pageIndex + 1
+        );
+      }
     }
-  });
+  );
 
   /* =======================================================
      Touch Swipe
@@ -582,10 +836,14 @@ document.addEventListener("DOMContentLoaded", () => {
   workPageView.addEventListener(
     "touchstart",
     (event) => {
-      const touch = event.changedTouches[0];
+      const touch =
+        event.changedTouches[0];
 
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
+      touchStartX =
+        touch.clientX;
+
+      touchStartY =
+        touch.clientY;
     },
     { passive: true }
   );
@@ -593,26 +851,42 @@ document.addEventListener("DOMContentLoaded", () => {
   workPageView.addEventListener(
     "touchend",
     (event) => {
-      const touch = event.changedTouches[0];
+      const touch =
+        event.changedTouches[0];
 
-      const deltaX = touch.clientX - touchStartX;
-      const deltaY = touch.clientY - touchStartY;
+      const deltaX =
+        touch.clientX -
+        touchStartX;
+
+      const deltaY =
+        touch.clientY -
+        touchStartY;
 
       /*
-       * 縦スクロールが主体ならページ移動しない。
+       * 縦スクロールが主体なら
+       * ページ移動しない。
        */
-      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+      if (
+        Math.abs(deltaY) >
+        Math.abs(deltaX)
+      ) {
         return;
       }
 
-      if (Math.abs(deltaX) < 60) {
+      if (
+        Math.abs(deltaX) < 60
+      ) {
         return;
       }
 
       if (deltaX < 0) {
-        goToPage(pageIndex + 1);
+        goToPage(
+          pageIndex + 1
+        );
       } else {
-        goToPage(pageIndex - 1);
+        goToPage(
+          pageIndex - 1
+        );
       }
     },
     { passive: true }
@@ -628,11 +902,18 @@ document.addEventListener("DOMContentLoaded", () => {
     link.href =
       `../bookshelf/index.html?category=${encodeURIComponent(
         categoryId
-      )}&work=${encodeURIComponent(workId)}`;
+      )}&work=${encodeURIComponent(
+        workId
+      )}`;
   }
 
-  setupBackLink(backToBookshelf);
-  setupBackLink(backToBookshelfFooter);
+  setupBackLink(
+    backToBookshelf
+  );
+
+  setupBackLink(
+    backToBookshelfFooter
+  );
 
   /* =======================================================
      Error
@@ -643,27 +924,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
     workBody.replaceChildren();
 
-    const error = document.createElement("div");
-    error.className = "work-error";
+    const error =
+      document.createElement("div");
 
-    const strong = document.createElement("strong");
-    strong.textContent = "WORK NOT FOUND";
+    error.className =
+      "work-error";
 
-    const text = document.createElement("p");
-    text.textContent = message;
+    const strong =
+      document.createElement(
+        "strong"
+      );
 
-    error.appendChild(strong);
-    error.appendChild(text);
+    strong.textContent =
+      "WORK NOT FOUND";
 
-    workBody.appendChild(error);
+    const text =
+      document.createElement("p");
 
-    workPageView.classList.add("is-visible");
+    text.textContent =
+      message;
+
+    error.appendChild(
+      strong
+    );
+
+    error.appendChild(
+      text
+    );
+
+    workBody.appendChild(
+      error
+    );
+
+    workPageView.classList.add(
+      "is-visible"
+    );
 
     const indicator =
-      document.getElementById("workPageIndicator");
+      document.getElementById(
+        "workPageIndicator"
+      );
 
     if (indicator) {
-      indicator.classList.add("is-visible");
+      indicator.classList.add(
+        "is-visible"
+      );
     }
   }
 
@@ -672,21 +977,36 @@ document.addEventListener("DOMContentLoaded", () => {
      ======================================================= */
 
   async function init() {
-    setLoading(true, "LOADING");
+    setLoading(
+      true,
+      "LOADING"
+    );
 
     try {
-      workData = await loadWork();
+      workData =
+        await loadWork();
 
-      renderWork(workData);
+      renderWork(
+        workData
+      );
 
-      pages = createPages(workData.body);
+      pages =
+        createPages(
+          workData.body
+        );
+
       pageIndex = 0;
 
-      renderCurrentPage(true);
+      renderCurrentPage(
+        true
+      );
 
       setLoading(false);
     } catch (error) {
-      console.error("WORK ERROR:", error);
+      console.error(
+        "WORK ERROR:",
+        error
+      );
 
       showError(
         "作品を読み込めませんでした。"
