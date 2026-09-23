@@ -415,125 +415,44 @@ document.addEventListener("DOMContentLoaded", () => {
      ======================================================= */
 
   function createPages(body) {
-    if (!body) {
-      return [""];
-    }
-
-    /*
-     * =====================================================
-     * ===PAGE=== による手動ページ分割
-     * =====================================================
-     *
-     * story.txt が
-     *
-     * 文章。
-     *
-     * ===PAGE===
-     *
-     * 　次のページの文章。
-     *
-     * となっている場合、
-     *
-     * 「===PAGE===」の行だけを区切りとして扱う。
-     *
-     * 全角スペース「　」は一切削除しない。
-     */
-
-    if (body.includes("===PAGE===")) {
-      const manualPages = [];
-
-      /*
-       * 改行コードを統一する。
-       *
-       * 全角スペースなどの本文文字は変更しない。
-       */
-      const normalizedBody =
-        body.replace(/\r\n/g, "\n");
-
-      /*
-       * ===PAGE=== が単独の行になっている場合だけ
-       * ページ区切りとして扱う。
-       *
-       * [ \t] は半角スペースとタブだけ。
-       *
-       * \s は使用しない。
-       * （\sには全角スペースも含まれるため）
-       */
-      const rawPages =
-        normalizedBody.split(
-          /^[ \t]*===PAGE===[ \t]*$/m
-        );
-
-      rawPages.forEach((page) => {
-        /*
-         * ページ区切りの前後にある
-         * 構造上の空行だけを整理する。
-         *
-         * ここでも全角スペースは削除しない。
-         */
-
-        let cleanPage = page;
-
-        /*
-         * ページ先頭にある改行だけ削除。
-         *
-         * 例えば
-         *
-         * \n\n　次の文章
-         *
-         * なら
-         *
-         * 　次の文章
-         *
-         * になる。
-         *
-         * 「　」は削除されない。
-         */
-        cleanPage =
-          cleanPage.replace(
-            /^\n+/,
-            ""
-          );
-
-        /*
-         * ページ末尾にある改行だけ削除。
-         */
-        cleanPage =
-          cleanPage.replace(
-            /\n+$/,
-            ""
-          );
-
-        /*
-         * 空ページだけ除外。
-         *
-         * trim()は判定にしか使わない。
-         * cleanPageそのものは変更しない。
-         */
-        if (
-          cleanPage.trim() !== ""
-        ) {
-          manualPages.push(
-            cleanPage
-          );
-        }
-      });
-
-      return manualPages.length > 0
-        ? manualPages
-        : [""];
-    }
-
-    /*
-     * =====================================================
-     * ===PAGE=== がない場合
-     * =====================================================
-     *
-     * 従来どおり自動ページ分割。
-     */
-
-    return autoSplitPages(body);
+  if (!body) {
+    return [""];
   }
+
+  const normalizedBody = body.replace(/\r\n/g, "\n");
+
+  // ===PAGE=== を「区切り」として行単位で処理する
+  // line.trim() は判定だけに使用し、
+  // 実際の本文 line はそのまま保存する。
+  const lines = normalizedBody.split("\n");
+
+  const pages = [];
+  let currentPage = [];
+
+  lines.forEach((line) => {
+    if (line.trim() === "===PAGE===") {
+      pages.push(currentPage.join("\n"));
+      currentPage = [];
+      return;
+    }
+
+    currentPage.push(line);
+  });
+
+  // 最後のページを追加
+  pages.push(currentPage.join("\n"));
+
+  return pages
+    .map((page) => {
+      // ページそのものの前後にある「空行」だけ削除
+      // 全角スペース「　」は削除しない
+      return page
+        .replace(/^\n+/, "")
+        .replace(/\n+$/, "");
+    })
+    .filter((page) => page.trim() !== "");
+}
+
 
   /* =======================================================
      Work Data
