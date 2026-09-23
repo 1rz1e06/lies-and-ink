@@ -1,1623 +1,698 @@
+/* =========================================================
+   Lies & Ink — WORK
+   ========================================================= */
+
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
 
-  /* =========================================================
-     Elements
-  ========================================================= */
-
   const work = document.getElementById("work");
 
+  const workNumber = document.getElementById("workNumber");
+  const workTitle = document.getElementById("workTitle");
+
   const workCover = document.getElementById("workCover");
-  const workCoverImage =
-    document.getElementById("workCoverImage");
+  const workCoverImage = document.getElementById("workCoverImage");
 
-  const workTitleBlock =
-    document.getElementById("workTitleBlock");
+  const workInfo = document.getElementById("workInfo");
+  const workMeta = document.getElementById("workMeta");
+  const workDescription = document.getElementById("workDescription");
 
-  const workNumber =
-    document.getElementById("workNumber");
+  const workPageView = document.getElementById("workPageView");
+  const workBody = document.getElementById("workBody");
 
-  const workTitle =
-    document.getElementById("workTitle");
+  const currentPage = document.getElementById("currentPage");
+  const totalPages = document.getElementById("totalPages");
 
-  const workInfo =
-    document.getElementById("workInfo");
+  const prevPage = document.getElementById("prevPage");
+  const nextPage = document.getElementById("nextPage");
 
-  const workDescription =
-    document.getElementById("workDescription");
-
-  const workReader =
-    document.getElementById("workReader");
-
-  const workPageView =
-    document.getElementById("workPageView");
-
-  const workBody =
-    document.getElementById("workBody");
-
-  const workPageIndicator =
-    document.getElementById("workPageIndicator");
-
-  const currentPage =
-    document.getElementById("currentPage");
-
-  const totalPages =
-    document.getElementById("totalPages");
-
-  const prevPage =
-    document.getElementById("prevPage");
-
-  const nextPage =
-    document.getElementById("nextPage");
-
-  const backToBookshelf =
-    document.getElementById("backToBookshelf");
-
+  const backToBookshelf = document.getElementById("backToBookshelf");
   const backToBookshelfFooter =
     document.getElementById("backToBookshelfFooter");
 
-  const loading =
-    document.getElementById("workLoading");
+  const loading = document.getElementById("workLoading");
+  const loadingText = document.getElementById("workLoadingText");
 
-  const loadingText =
-    document.getElementById("workLoadingText");
+  const params = new URLSearchParams(window.location.search);
 
+  const categoryId = params.get("category");
+  const workId = params.get("work");
 
-  /* =========================================================
-     URL
-  ========================================================= */
-
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
-
-  const categoryId =
-    params.get("category");
-
-  const workParam =
-    params.get("work");
-
-
-  if (!categoryId || !workParam) {
-    showError(
-      "作品情報を取得できませんでした。"
-    );
-    return;
-  }
-
-
-  const workNumberValue =
-    normalizeWorkNumber(workParam);
-
-
-  if (!workNumberValue) {
-    showError(
-      "作品番号が正しくありません。"
-    );
-    return;
-  }
-
-
-  /* =========================================================
-     Category
-  ========================================================= */
-
-  const categories =
-    window.LiesInk &&
-    Array.isArray(
-      window.LiesInk.categories
-    )
-      ? window.LiesInk.categories
-      : [];
-
-
-  const category =
-    categories.find(
-      (item) =>
-        item.id === categoryId
-    );
-
-
-  if (!category) {
-    showError(
-      "カテゴリーが見つかりませんでした。"
-    );
-    return;
-  }
-
-
-  if (work) {
-    work.style.setProperty(
-      "--category-color",
-      category.color || "#6E91B5"
-    );
-  }
-
-
-  /* =========================================================
-     Paths
-  ========================================================= */
-
-  const workBasePath =
-    `../work/${categoryId}/${workNumberValue}`;
-
-  const storyPath =
-    `${workBasePath}/story.txt`;
-
-  const infoPath =
-    `${workBasePath}/info.txt`;
-
-  const coverPath =
-    `${workBasePath}/cover.jpg`;
-
-
-  /* =========================================================
-     State
-  ========================================================= */
-
+  let workData = null;
   let pages = [];
-
   let pageIndex = 0;
 
-  let touchStartX = 0;
+  /* =======================================================
+     Category
+     ======================================================= */
 
-  let touchStartY = 0;
+  function getCategory() {
+    if (!window.LiesInk || !Array.isArray(window.LiesInk.categories)) {
+      return null;
+    }
 
-
-  /*
-   * ===PAGE=== がない場合の
-   * 自動ページ分割目安
-   */
-  const AUTO_PAGE_CHAR_LIMIT = 7000;
-
-
-  /* =========================================================
-     Initialization
-  ========================================================= */
-
-  init();
-
-
-  async function init() {
-
-    setLoading(
-      true,
-      "LOADING"
+    return window.LiesInk.categories.find(
+      (category) => category.id === categoryId
     );
+  }
 
+  /* =======================================================
+     Loading
+     ======================================================= */
+
+  function setLoading(isLoading, message = "LOADING") {
+    if (!work) return;
+
+    work.classList.toggle("is-loading", isLoading);
+
+    if (loading) {
+      loading.setAttribute("aria-hidden", String(!isLoading));
+    }
+
+    if (loadingText) {
+      loadingText.textContent = message;
+    }
+  }
+
+  /* =======================================================
+     Fetch
+     ======================================================= */
+
+  async function fetchText(url, timeout = 15000) {
+    const controller = new AbortController();
+
+    const timer = window.setTimeout(() => {
+      controller.abort();
+    }, timeout);
 
     try {
-
-      const workData =
-        await loadWork();
-
-
-      if (
-        !workData ||
-        !workData.body
-      ) {
-        throw new Error(
-          "story.txt に本文がありません。"
-        );
-      }
-
-
-      renderWork(workData);
-
-
-      pages =
-        createPages(
-          workData.body
-        );
-
-
-      if (!pages.length) {
-        throw new Error(
-          "本文をページに分割できませんでした。"
-        );
-      }
-
-
-      pageIndex = 0;
-
-
-      renderCurrentPage(false);
-
-
-      /*
-       * 表示アニメーション
-       */
-      window.requestAnimationFrame(() => {
-
-        if (workCover) {
-          workCover.classList.add(
-            "is-visible"
-          );
-        }
-
-        if (workTitleBlock) {
-          workTitleBlock.classList.add(
-            "is-visible"
-          );
-        }
-
-        if (
-          workInfo &&
-          workData.info
-        ) {
-          workInfo.classList.add(
-            "is-visible"
-          );
-        }
-
-        if (workPageView) {
-          workPageView.classList.add(
-            "is-visible"
-          );
-        }
-
-        if (workPageIndicator) {
-          workPageIndicator.classList.add(
-            "is-visible"
-          );
-        }
-
+      const response = await fetch(`${url}?v=${Date.now()}`, {
+        cache: "no-store",
+        signal: controller.signal
       });
 
-
-      /*
-       * Loading終了
-       */
-      setLoading(false);
-
-    } catch (error) {
-
-      console.error(
-        "[Lies & Ink] WORK ERROR:",
-        error
-      );
-
-
-      showError(
-        "作品を読み込めませんでした。",
-        error &&
-        error.message
-          ? error.message
-          : ""
-      );
-
-    }
-
-  }
-
-
-  /* =========================================================
-     Load work
-  ========================================================= */
-
-  async function loadWork() {
-
-    /*
-     * story.txt
-     *
-     * これは必須
-     */
-
-    const storyResponse =
-      await fetchWithTimeout(
-        storyPath,
-        20000
-      );
-
-
-    if (!storyResponse.ok) {
-
-      throw new Error(
-        `story.txt の取得に失敗しました。HTTP ${storyResponse.status}`
-      );
-
-    }
-
-
-    const storyText =
-      await storyResponse.text();
-
-
-    if (
-      !storyText ||
-      !storyText.trim()
-    ) {
-
-      throw new Error(
-        "story.txt が空です。"
-      );
-
-    }
-
-
-    const parsedStory =
-      parseStory(storyText);
-
-
-    /*
-     * info.txt
-     *
-     * なくてもOK
-     */
-
-    let infoText = "";
-
-
-    try {
-
-      const infoResponse =
-        await fetchWithTimeout(
-          infoPath,
-          10000
-        );
-
-
-      if (infoResponse.ok) {
-
-        infoText =
-          await infoResponse.text();
-
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
 
-    } catch (error) {
-
-      console.warn(
-        "[Lies & Ink] info.txt を読み込めませんでした。",
-        error
-      );
-
-    }
-
-
-    /*
-     * cover.jpg
-     *
-     * なくてもOK
-     *
-     * ここでHEADは使用しません。
-     */
-
-    let cover = "";
-
-
-    try {
-
-      const exists =
-        await checkImage(
-          coverPath
-        );
-
-
-      if (exists) {
-        cover = coverPath;
-      }
-
-    } catch (error) {
-
-      console.warn(
-        "[Lies & Ink] cover.jpg を読み込めませんでした。",
-        error
-      );
-
-    }
-
-
-    return {
-
-      title:
-        parsedStory.title,
-
-      body:
-        parsedStory.body,
-
-      info:
-        infoText.trim(),
-
-      cover
-
-    };
-
-  }
-
-
-  /* =========================================================
-     Fetch with timeout
-  ========================================================= */
-
-  async function fetchWithTimeout(
-    url,
-    timeout = 20000
-  ) {
-
-    const controller =
-      new AbortController();
-
-
-    const timer =
-      window.setTimeout(
-        () => {
-          controller.abort();
-        },
-        timeout
-      );
-
-
-    try {
-
-      /*
-       * キャッシュバスターは
-       * story.txtの取得時だけ使用。
-       */
-      const separator =
-        url.includes("?")
-          ? "&"
-          : "?";
-
-
-      return await fetch(
-        `${url}${separator}v=${Date.now()}`,
-        {
-          method: "GET",
-          cache: "no-store",
-          signal:
-            controller.signal
-        }
-      );
-
-    } catch (error) {
-
-      if (
-        error &&
-        error.name === "AbortError"
-      ) {
-
-        throw new Error(
-          `読み込みがタイムアウトしました: ${url}`
-        );
-
-      }
-
-
-      throw error;
-
+      return await response.text();
     } finally {
-
-      window.clearTimeout(
-        timer
-      );
-
+      window.clearTimeout(timer);
     }
-
   }
 
+  /* =======================================================
+     Image Check
+     ======================================================= */
 
-  /* =========================================================
-     Parse story
-  ========================================================= */
+  function checkImage(url, timeout = 5000) {
+    return new Promise((resolve) => {
+      const image = new Image();
+
+      let finished = false;
+
+      const finish = (result) => {
+        if (finished) return;
+
+        finished = true;
+        window.clearTimeout(timer);
+        resolve(result);
+      };
+
+      const timer = window.setTimeout(() => {
+        finish(false);
+      }, timeout);
+
+      image.onload = () => finish(true);
+      image.onerror = () => finish(false);
+
+      image.src = `${url}?v=${Date.now()}`;
+    });
+  }
+
+  /* =======================================================
+     Story Parser
+     ======================================================= */
 
   function parseStory(text) {
+    /*
+     * 最初の非空行をタイトルとして扱う。
+     *
+     * ここでは trim() を使わない。
+     * 本文の全角スペースを保持するため。
+     */
 
-    const normalized =
-      text
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
-        .replace(/^\uFEFF/, "");
+    const normalized = text.replace(/\r\n/g, "\n");
 
-
-    const lines =
-      normalized.split("\n");
-
-
-    let title = "";
+    const lines = normalized.split("\n");
 
     let titleIndex = -1;
 
-
-    for (
-      let i = 0;
-      i < lines.length;
-      i++
-    ) {
-
-      if (
-        lines[i].trim() !== ""
-      ) {
-
-        title =
-          lines[i].trim();
-
+    for (let i = 0; i < lines.length; i += 1) {
+      if (lines[i].trim() !== "") {
         titleIndex = i;
-
         break;
-
       }
-
     }
-
 
     if (titleIndex === -1) {
-
       return {
-        title: "Untitled",
+        title: "",
         body: ""
       };
-
     }
 
+    const title = lines[titleIndex].trim();
 
-    const body =
-      lines
-        .slice(titleIndex + 1)
-        .join("\n")
-        .trim();
+    /*
+     * タイトル以降は本文。
+     *
+     * ここでも .trim() を使わない。
+     * 特に本文1行目の
+     *
+     * 「　窓の外は、まだ夜だった。」
+     *
+     * の全角スペースを残す。
+     */
+    const bodyLines = lines.slice(titleIndex + 1);
 
+    /*
+     * タイトル直後の空行だけを削除する。
+     * ただし本文そのものの行頭スペースは変更しない。
+     */
+    while (
+      bodyLines.length > 0 &&
+      bodyLines[0].trim() === ""
+    ) {
+      bodyLines.shift();
+    }
+
+    /*
+     * 本文末尾の完全な空行だけを削除する。
+     * 文章行そのものは変更しない。
+     */
+    while (
+      bodyLines.length > 0 &&
+      bodyLines[bodyLines.length - 1].trim() === ""
+    ) {
+      bodyLines.pop();
+    }
 
     return {
       title,
-      body
+      body: bodyLines.join("\n")
     };
-
   }
 
+  /* =======================================================
+     Long Paragraph Split
+     ======================================================= */
 
-  /* =========================================================
-     Create pages
-  ========================================================= */
-
-  function createPages(text) {
-
-    const normalized =
-      text
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
-        .trim();
-
-
-    if (!normalized) {
-      return [];
+  function splitLongParagraph(paragraph, limit = 7000) {
+    if (paragraph.length <= limit) {
+      return [paragraph];
     }
-
-
-    /*
-     * ---------------------------------------------------------
-     * ===PAGE=== がある場合
-     * ---------------------------------------------------------
-     */
-
-    if (
-      /^\s*===PAGE===\s*$/m
-        .test(normalized)
-    ) {
-
-      return normalized
-        .split(
-          /^\s*===PAGE===\s*$/gm
-        )
-        .map(
-          (page) =>
-            page.trim()
-        )
-        .filter(Boolean);
-
-    }
-
-
-    /*
-     * ---------------------------------------------------------
-     * ===PAGE=== がない場合
-     * 自動ページ分割
-     * ---------------------------------------------------------
-     */
-
-    return autoSplitPages(
-      normalized,
-      AUTO_PAGE_CHAR_LIMIT
-    );
-
-  }
-
-
-  /* =========================================================
-     Automatic page split
-  ========================================================= */
-
-  function autoSplitPages(
-    text,
-    limit
-  ) {
-
-    const paragraphs =
-      text
-        .split(/\n\s*\n/)
-        .map(
-          (paragraph) =>
-            paragraph.trim()
-        )
-        .filter(Boolean);
-
-
-    if (!paragraphs.length) {
-      return [text];
-    }
-
 
     const result = [];
+    let remaining = paragraph;
 
-    let current = "";
+    while (remaining.length > limit) {
+      let cut = remaining.lastIndexOf("。", limit);
 
-    let currentLength = 0;
-
-
-    paragraphs.forEach(
-      (paragraph) => {
-
-        const length =
-          paragraph.length;
-
-
-        /*
-         * まだページが空
-         */
-        if (!current) {
-
-          current =
-            paragraph;
-
-          currentLength =
-            length;
-
-          return;
-
-        }
-
-
-        /*
-         * まだ入る
-         */
-        if (
-          currentLength +
-          length +
-          2 <=
-          limit
-        ) {
-
-          current +=
-            "\n\n" +
-            paragraph;
-
-          currentLength +=
-            length + 2;
-
-          return;
-
-        }
-
-
-        /*
-         * 現在のページを確定
-         */
-        result.push(
-          current.trim()
-        );
-
-
-        /*
-         * 次ページ
-         */
-        current =
-          paragraph;
-
-        currentLength =
-          length;
-
+      if (cut < Math.floor(limit * 0.5)) {
+        cut = remaining.lastIndexOf("、", limit);
       }
-    );
 
+      if (cut < Math.floor(limit * 0.5)) {
+        cut = limit - 1;
+      }
 
-    if (
-      current.trim()
-    ) {
+      const chunk = remaining.slice(0, cut + 1);
 
-      result.push(
-        current.trim()
-      );
+      /*
+       * ここでも trim() は使わない。
+       *
+       * chunk の先頭にある全角スペースを保持する。
+       */
+      result.push(chunk);
 
+      remaining = remaining.slice(cut + 1);
     }
 
+    if (remaining.length > 0) {
+      result.push(remaining);
+    }
 
     return result;
-
   }
 
+  /* =======================================================
+     Auto Page Split
+     ======================================================= */
 
-  /* =========================================================
-     Render work
-  ========================================================= */
+  function autoSplitPages(body, limit = 7000) {
+    /*
+     * 空行を「段落の区切り」として扱う。
+     *
+     * split(/\n\s*\n/) では、段落の先頭にある
+     * 全角スペースまで問題になる可能性があるため、
+     * 改行そのものを基準にする。
+     */
+
+    const paragraphs = body.split(/\n{2,}/);
+
+    const result = [];
+    let current = "";
+
+    paragraphs.forEach((paragraph) => {
+      /*
+       * 完全に空の段落だけを無視する。
+       *
+       * paragraph.trim() === "" は判定だけに使用。
+       * 実際に格納する文字列には trim() をかけない。
+       */
+      if (paragraph.trim() === "") {
+        return;
+      }
+
+      const pieces = splitLongParagraph(paragraph, limit);
+
+      pieces.forEach((piece) => {
+        const candidate =
+          current.length === 0
+            ? piece
+            : `${current}\n\n${piece}`;
+
+        if (candidate.length <= limit) {
+          current = candidate;
+        } else {
+          if (current.length > 0) {
+            result.push(current);
+          }
+
+          current = piece;
+        }
+      });
+    });
+
+    if (current.length > 0) {
+      result.push(current);
+    }
+
+    return result.length > 0 ? result : [""];
+  }
+
+  /* =======================================================
+     Page Creation
+     ======================================================= */
+
+  function createPages(body) {
+    if (!body) {
+      return [""];
+    }
+
+    /*
+     * ===PAGE=== が書かれている場合は、
+     * 作者指定のページ分けを優先する。
+     */
+    if (body.includes("===PAGE===")) {
+      const manualPages = body.split(/\n?\s*===PAGE===\s*\n?/);
+
+      return manualPages
+        .map((page) => {
+          /*
+           * ページ全体の trim() は絶対にしない。
+           *
+           * 末尾の改行だけ整理する。
+           */
+          return page.replace(/\n+$/, "");
+        })
+        .filter((page) => page.trim() !== "");
+    }
+
+    /*
+     * ===PAGE=== がない場合は自動分割。
+     */
+    return autoSplitPages(body);
+  }
+
+  /* =======================================================
+     Work Data
+     ======================================================= */
+
+  async function loadWork() {
+    const category = getCategory();
+
+    if (!category) {
+      throw new Error("CATEGORY_NOT_FOUND");
+    }
+
+    if (!workId || !/^\d+$/.test(workId)) {
+      throw new Error("WORK_NOT_FOUND");
+    }
+
+    const number = String(Number(workId)).padStart(2, "0");
+
+    const basePath = `../work/${category.id}/${number}`;
+
+    /*
+     * story.txt は必須。
+     */
+    const storyText = await fetchText(`${basePath}/story.txt`);
+
+    const story = parseStory(storyText);
+
+    if (!story.title && !story.body) {
+      throw new Error("EMPTY_STORY");
+    }
+
+    /*
+     * info.txt は任意。
+     */
+    let info = "";
+
+    try {
+      info = await fetchText(`${basePath}/info.txt`);
+
+      /*
+       * 説明文については末尾の改行だけ整理。
+       * 先頭の全角スペースは保持。
+       */
+      info = info.replace(/\n+$/, "");
+    } catch (error) {
+      info = "";
+    }
+
+    /*
+     * cover.jpg は任意。
+     */
+    const coverPath = `${basePath}/cover.jpg`;
+    const hasCover = await checkImage(coverPath);
+
+    return {
+      category,
+      number,
+      title: story.title,
+      body: story.body,
+      info,
+      cover: hasCover ? coverPath : null
+    };
+  }
+
+  /* =======================================================
+     Render Work
+     ======================================================= */
 
   function renderWork(data) {
+    if (!work) return;
 
-    /*
-     * Number
-     */
-
-    if (workNumber) {
-
-      workNumber.textContent =
-        workNumberValue;
-
-    }
-
-
-    /*
-     * Title
-     */
-
-    if (workTitle) {
-
-      workTitle.textContent =
-        data.title ||
-        "Untitled";
-
-    }
-
-
-    /*
-     * Cover
-     */
-
-    if (
-      data.cover &&
-      workCover &&
-      workCoverImage
-    ) {
-
-      workCoverImage.src =
-        data.cover;
-
-      workCoverImage.alt =
-        `${data.title || "作品"} cover`;
-
-      workCover.hidden = false;
-
-    } else if (workCover) {
-
-      workCover.hidden = true;
-
-    }
-
-
-    /*
-     * Description
-     */
-
-    if (workDescription) {
-
-      renderDescription(
-        workDescription,
-        data.info
-      );
-
-    }
-
-
-    if (workInfo) {
-
-      workInfo.hidden =
-        !data.info;
-
-    }
-
-
-    /*
-     * Bookshelf URL
-     */
-
-    const bookshelfUrl =
-      `../bookshelf/index.html?category=${encodeURIComponent(
-        categoryId
-      )}&work=${encodeURIComponent(
-        workNumberValue
-      )}`;
-
-
-    if (backToBookshelf) {
-
-      backToBookshelf.href =
-        bookshelfUrl;
-
-    }
-
-
-    if (backToBookshelfFooter) {
-
-      backToBookshelfFooter.href =
-        bookshelfUrl;
-
-    }
-
-  }
-
-
-  /* =========================================================
-     Description
-  ========================================================= */
-
-  function renderDescription(
-    element,
-    text
-  ) {
-
-    element.replaceChildren();
-
-
-    if (!text) {
-      return;
-    }
-
-
-    const paragraphs =
-      text
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
-        .split(/\n\s*\n/)
-        .map(
-          (paragraph) =>
-            paragraph.trim()
-        )
-        .filter(Boolean);
-
-
-    paragraphs.forEach(
-      (paragraph) => {
-
-        const p =
-          document.createElement("p");
-
-
-        const lines =
-          paragraph.split("\n");
-
-
-        lines.forEach(
-          (line, index) => {
-
-            p.appendChild(
-              document.createTextNode(
-                line
-              )
-            );
-
-
-            if (
-              index <
-              lines.length - 1
-            ) {
-
-              p.appendChild(
-                document.createElement(
-                  "br"
-                )
-              );
-
-            }
-
-          }
-        );
-
-
-        element.appendChild(p);
-
-      }
+    work.style.setProperty(
+      "--category-color",
+      data.category.color
     );
 
+    workNumber.textContent = data.number;
+    workTitle.textContent = data.title;
+
+    /* -------------------------------------------------------
+       Cover
+       ------------------------------------------------------- */
+
+    if (data.cover) {
+      workCover.hidden = false;
+      workCover.classList.add("has-cover");
+
+      workCoverImage.alt = data.title;
+      workCoverImage.src = data.cover;
+
+      window.requestAnimationFrame(() => {
+        workCover.classList.add("is-visible");
+      });
+    } else {
+      workCover.hidden = true;
+      workCover.classList.remove(
+        "has-cover",
+        "is-visible"
+      );
+
+      workCoverImage.removeAttribute("src");
+      workCoverImage.alt = "";
+    }
+
+    /* -------------------------------------------------------
+       Info
+       ------------------------------------------------------- */
+
+    if (data.info.trim() !== "") {
+      workInfo.hidden = false;
+
+      /*
+       * innerHTML ではなく textContent。
+       * 説明文中の文字をそのまま表示。
+       */
+      workDescription.textContent = data.info;
+
+      window.requestAnimationFrame(() => {
+        workInfo.classList.add("is-visible");
+      });
+    } else {
+      workInfo.hidden = true;
+      workInfo.classList.remove("is-visible");
+      workDescription.textContent = "";
+    }
+
+    /* -------------------------------------------------------
+       Title
+       ------------------------------------------------------- */
+
+    const titleBlock =
+      document.querySelector(".work-title");
+
+    if (titleBlock) {
+      window.requestAnimationFrame(() => {
+        titleBlock.classList.add("is-visible");
+      });
+    }
   }
 
+  /* =======================================================
+     Render Page
+     ======================================================= */
 
-  /* =========================================================
-     Render current page
-  ========================================================= */
+  function renderCurrentPage(resetScroll = true) {
+    if (!workBody || !workPageView) return;
 
-  function renderCurrentPage(
-    animate = true
-  ) {
+    const page = pages[pageIndex] || "";
 
-    if (
-      !workBody ||
-      !workPageView
-    ) {
+    /*
+     * いったん空にする。
+     */
+    workBody.replaceChildren();
+
+    /*
+     * 本文を段落単位で表示。
+     *
+     * 重要：
+     * page.split() した文字列に trim() をかけない。
+     * そのまま textContent に入れることで、
+     * 行頭の全角スペースを保持する。
+     */
+    const paragraphs = page.split(/\n{2,}/);
+
+    paragraphs.forEach((paragraphText) => {
+      if (paragraphText.trim() === "") {
+        return;
+      }
+
+      const paragraph = document.createElement("p");
+
+      /*
+       * textContent を使用。
+       * HTMLとして解釈させず、
+       * 全角スペース・改行を保持する。
+       */
+      paragraph.textContent = paragraphText;
+
+      workBody.appendChild(paragraph);
+    });
+
+    currentPage.textContent = String(pageIndex + 1);
+    totalPages.textContent = String(pages.length);
+
+    prevPage.disabled = pageIndex <= 0;
+    nextPage.disabled = pageIndex >= pages.length - 1;
+
+    if (resetScroll) {
+      workPageView.scrollTop = 0;
+    }
+
+    workPageView.classList.add("is-visible");
+
+    const indicator =
+      document.getElementById("workPageIndicator");
+
+    if (indicator) {
+      indicator.classList.add("is-visible");
+    }
+  }
+
+  /* =======================================================
+     Page Navigation
+     ======================================================= */
+
+  function goToPage(index) {
+    if (index < 0 || index >= pages.length) {
       return;
     }
 
+    pageIndex = index;
 
-    const pageText =
-      pages[pageIndex] || "";
+    renderCurrentPage(true);
+  }
 
+  prevPage.addEventListener("click", () => {
+    goToPage(pageIndex - 1);
+  });
 
-    if (animate) {
+  nextPage.addEventListener("click", () => {
+    goToPage(pageIndex + 1);
+  });
 
-      workPageView.classList.add(
-        "is-page-changing"
-      );
+  /* =======================================================
+     Keyboard Navigation
+     ======================================================= */
 
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      goToPage(pageIndex - 1);
     }
 
+    if (event.key === "ArrowRight") {
+      goToPage(pageIndex + 1);
+    }
+  });
 
-    /*
-     * ページ変更時は
-     * ページ内スクロールを先頭へ
-     */
+  /* =======================================================
+     Touch Swipe
+     ======================================================= */
 
-    workPageView.scrollTop = 0;
+  let touchStartX = 0;
+  let touchStartY = 0;
 
+  workPageView.addEventListener(
+    "touchstart",
+    (event) => {
+      const touch = event.changedTouches[0];
 
-    /*
-     * 古い本文を削除
-     */
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    },
+    { passive: true }
+  );
+
+  workPageView.addEventListener(
+    "touchend",
+    (event) => {
+      const touch = event.changedTouches[0];
+
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+
+      /*
+       * 縦スクロールが主体ならページ移動しない。
+       */
+      if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
+      }
+
+      if (Math.abs(deltaX) < 60) {
+        return;
+      }
+
+      if (deltaX < 0) {
+        goToPage(pageIndex + 1);
+      } else {
+        goToPage(pageIndex - 1);
+      }
+    },
+    { passive: true }
+  );
+
+  /* =======================================================
+     Back Links
+     ======================================================= */
+
+  function setupBackLink(link) {
+    if (!link) return;
+
+    link.href =
+      `../bookshelf/index.html?category=${encodeURIComponent(
+        categoryId
+      )}&work=${encodeURIComponent(workId)}`;
+  }
+
+  setupBackLink(backToBookshelf);
+  setupBackLink(backToBookshelfFooter);
+
+  /* =======================================================
+     Error
+     ======================================================= */
+
+  function showError(message) {
+    setLoading(false);
 
     workBody.replaceChildren();
 
+    const error = document.createElement("div");
+    error.className = "work-error";
 
-    /*
-     * 現在ページを描画
-     */
+    const strong = document.createElement("strong");
+    strong.textContent = "WORK NOT FOUND";
 
-    renderStory(
-      workBody,
-      pageText
-    );
+    const text = document.createElement("p");
+    text.textContent = message;
 
+    error.appendChild(strong);
+    error.appendChild(text);
 
-    /*
-     * ページ番号
-     */
+    workBody.appendChild(error);
 
-    if (currentPage) {
+    workPageView.classList.add("is-visible");
 
-      currentPage.textContent =
-        String(
-          pageIndex + 1
-        ).padStart(
-          2,
-          "0"
-        );
+    const indicator =
+      document.getElementById("workPageIndicator");
 
+    if (indicator) {
+      indicator.classList.add("is-visible");
     }
+  }
 
+  /* =======================================================
+     Init
+     ======================================================= */
 
-    if (totalPages) {
+  async function init() {
+    setLoading(true, "LOADING");
 
-      totalPages.textContent =
-        String(
-          pages.length
-        ).padStart(
-          2,
-          "0"
-        );
+    try {
+      workData = await loadWork();
 
-    }
+      renderWork(workData);
 
+      pages = createPages(workData.body);
+      pageIndex = 0;
 
-    /*
-     * Prev
-     */
+      renderCurrentPage(true);
 
-    if (prevPage) {
+      setLoading(false);
+    } catch (error) {
+      console.error("WORK ERROR:", error);
 
-      prevPage.disabled =
-        pageIndex <= 0;
-
-    }
-
-
-    /*
-     * Next
-     */
-
-    if (nextPage) {
-
-      nextPage.disabled =
-        pageIndex >=
-        pages.length - 1;
-
-    }
-
-
-    /*
-     * アニメーション解除
-     */
-
-    if (animate) {
-
-      window.setTimeout(
-        () => {
-
-          workPageView.classList.remove(
-            "is-page-changing"
-          );
-
-        },
-        180
+      showError(
+        "作品を読み込めませんでした。"
       );
-
     }
-
   }
 
-
-  /* =========================================================
-     Render story
-  ========================================================= */
-
-  function renderStory(
-    element,
-    text
-  ) {
-
-    const normalized =
-      text
-        .replace(/\r\n/g, "\n")
-        .replace(/\r/g, "\n")
-        .trim();
-
-
-    if (!normalized) {
-      return;
-    }
-
-
-    const paragraphs =
-      normalized
-        .split(/\n\s*\n/)
-        .map(
-          (paragraph) =>
-            paragraph.trim()
-        )
-        .filter(Boolean);
-
-
-    paragraphs.forEach(
-      (paragraph) => {
-
-        const p =
-          document.createElement("p");
-
-
-        const lines =
-          paragraph.split("\n");
-
-
-        lines.forEach(
-          (line, index) => {
-
-            p.appendChild(
-              document.createTextNode(
-                line
-              )
-            );
-
-
-            if (
-              index <
-              lines.length - 1
-            ) {
-
-              p.appendChild(
-                document.createElement(
-                  "br"
-                )
-              );
-
-            }
-
-          }
-        );
-
-
-        element.appendChild(p);
-
-      }
-    );
-
-  }
-
-
-  /* =========================================================
-     Page navigation
-  ========================================================= */
-
-  function goToPage(index) {
-
-    if (!pages.length) {
-      return;
-    }
-
-
-    const nextIndex =
-      Math.max(
-        0,
-        Math.min(
-          index,
-          pages.length - 1
-        )
-      );
-
-
-    if (
-      nextIndex === pageIndex
-    ) {
-      return;
-    }
-
-
-    pageIndex =
-      nextIndex;
-
-
-    renderCurrentPage(true);
-
-  }
-
-
-  if (prevPage) {
-
-    prevPage.addEventListener(
-      "click",
-      () => {
-
-        goToPage(
-          pageIndex - 1
-        );
-
-      }
-    );
-
-  }
-
-
-  if (nextPage) {
-
-    nextPage.addEventListener(
-      "click",
-      () => {
-
-        goToPage(
-          pageIndex + 1
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =========================================================
-     Keyboard
-  ========================================================= */
-
-  document.addEventListener(
-    "keydown",
-    (event) => {
-
-      const active =
-        document.activeElement;
-
-
-      if (
-        active &&
-        (
-          active.tagName === "INPUT" ||
-          active.tagName === "TEXTAREA" ||
-          active.isContentEditable
-        )
-      ) {
-
-        return;
-
-      }
-
-
-      if (
-        event.key === "ArrowLeft"
-      ) {
-
-        event.preventDefault();
-
-        goToPage(
-          pageIndex - 1
-        );
-
-      }
-
-
-      if (
-        event.key === "ArrowRight"
-      ) {
-
-        event.preventDefault();
-
-        goToPage(
-          pageIndex + 1
-        );
-
-      }
-
-
-      if (
-        event.key === " " &&
-        !event.shiftKey
-      ) {
-
-        event.preventDefault();
-
-        goToPage(
-          pageIndex + 1
-        );
-
-      }
-
-    }
-  );
-
-
-  /* =========================================================
-     Touch swipe
-  ========================================================= */
-
-  if (workPageView) {
-
-    workPageView.addEventListener(
-      "touchstart",
-      (event) => {
-
-        if (
-          !event.touches.length
-        ) {
-          return;
-        }
-
-
-        touchStartX =
-          event.touches[0].clientX;
-
-        touchStartY =
-          event.touches[0].clientY;
-
-      },
-      {
-        passive: true
-      }
-    );
-
-
-    workPageView.addEventListener(
-      "touchend",
-      (event) => {
-
-        if (
-          !event.changedTouches.length
-        ) {
-          return;
-        }
-
-
-        const touch =
-          event.changedTouches[0];
-
-
-        const deltaX =
-          touch.clientX -
-          touchStartX;
-
-
-        const deltaY =
-          touch.clientY -
-          touchStartY;
-
-
-        /*
-         * 縦スクロールなら
-         * ページ移動しない
-         */
-
-        if (
-          Math.abs(deltaX) <=
-          Math.abs(deltaY)
-        ) {
-
-          return;
-
-        }
-
-
-        if (
-          Math.abs(deltaX) < 60
-        ) {
-
-          return;
-
-        }
-
-
-        if (deltaX < 0) {
-
-          goToPage(
-            pageIndex + 1
-          );
-
-        } else {
-
-          goToPage(
-            pageIndex - 1
-          );
-
-        }
-
-      },
-      {
-        passive: true
-      }
-    );
-
-  }
-
-
-  /* =========================================================
-     Cover error
-  ========================================================= */
-
-  if (workCoverImage) {
-
-    workCoverImage.addEventListener(
-      "error",
-      () => {
-
-        if (workCover) {
-
-          workCover.hidden = true;
-
-        }
-
-      }
-    );
-
-  }
-
-
-  /* =========================================================
-     Check image
-  ========================================================= */
-
-  function checkImage(src) {
-
-    return new Promise(
-      (resolve) => {
-
-        const image =
-          new Image();
-
-
-        let finished = false;
-
-
-        const finish =
-          (result) => {
-
-            if (finished) {
-              return;
-            }
-
-            finished = true;
-
-            resolve(result);
-
-          };
-
-
-        image.onload = () => {
-          finish(true);
-        };
-
-
-        image.onerror = () => {
-          finish(false);
-        };
-
-
-        image.src =
-          `${src}?v=${Date.now()}`;
-
-
-        /*
-         * coverが無い場合に
-         * 5秒以上待たない
-         */
-
-        window.setTimeout(
-          () => {
-
-            finish(false);
-
-          },
-          5000
-        );
-
-      }
-    );
-
-  }
-
-
-  /* =========================================================
-     Loading
-  ========================================================= */
-
-  function setLoading(
-    isLoading,
-    message = "LOADING"
-  ) {
-
-    if (!loading) {
-      return;
-    }
-
-
-    if (loadingText) {
-
-      loadingText.textContent =
-        message;
-
-    }
-
-
-    if (isLoading) {
-
-      loading.classList.remove(
-        "is-hidden"
-      );
-
-      loading.setAttribute(
-        "aria-hidden",
-        "false"
-      );
-
-    } else {
-
-      loading.classList.add(
-        "is-hidden"
-      );
-
-      loading.setAttribute(
-        "aria-hidden",
-        "true"
-      );
-
-    }
-
-  }
-
-
-  /* =========================================================
-     Error
-  ========================================================= */
-
-  function showError(
-    message,
-    detail = ""
-  ) {
-
-    /*
-     * Loadingを必ず消す
-     */
-
-    setLoading(false);
-
-
-    if (workBody) {
-
-      workBody.replaceChildren();
-
-
-      const wrapper =
-        document.createElement(
-          "div"
-        );
-
-      wrapper.className =
-        "work-error";
-
-
-      const title =
-        document.createElement(
-          "p"
-        );
-
-      title.className =
-        "work-error__title";
-
-      title.textContent =
-        message;
-
-
-      wrapper.appendChild(
-        title
-      );
-
-
-      if (detail) {
-
-        const detailElement =
-          document.createElement(
-            "p"
-          );
-
-        detailElement.className =
-          "work-error__detail";
-
-        detailElement.textContent =
-          detail;
-
-
-        wrapper.appendChild(
-          detailElement
-        );
-
-      }
-
-
-      workBody.appendChild(
-        wrapper
-      );
-
-    }
-
-
-    console.error(
-      "[Lies & Ink] WORK:",
-      message,
-      detail
-    );
-
-  }
-
-
-  /* =========================================================
-     Work number
-  ========================================================= */
-
-  function normalizeWorkNumber(
-    value
-  ) {
-
-    const number =
-      Number.parseInt(
-        value,
-        10
-      );
-
-
-    if (
-      !Number.isFinite(number) ||
-      number < 1
-    ) {
-
-      return null;
-
-    }
-
-
-    return String(
-      number
-    ).padStart(
-      2,
-      "0"
-    );
-
-  }
-
+  init();
 });
