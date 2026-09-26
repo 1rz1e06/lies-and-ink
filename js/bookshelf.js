@@ -817,134 +817,182 @@
 
   function setupRMarkStyle() {
 
-    if (
-      document.getElementById(
-        "bookshelf-r-mark-style"
-      )
-    ) {
-      return;
+  if (
+    document.getElementById(
+      "bookshelf-r-mark-style"
+    )
+  ) {
+    return;
+  }
+
+
+  const style =
+    document.createElement("style");
+
+
+  style.id =
+    "bookshelf-r-mark-style";
+
+
+  style.textContent = `
+    /*
+     * R指定マーク
+     *
+     * 静かな書斎・古書の雰囲気に合わせた
+     * 控えめな縦長ラベル。
+     */
+
+    .book__r-mark {
+      position: absolute;
+
+      top: .5rem;
+      right: .5rem;
+
+      z-index: 50;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      width: 1.35rem;
+      height: 1.8rem;
+
+      box-sizing: border-box;
+
+      border: 1px solid rgba(143, 63, 63, .72);
+
+      background:
+        rgba(16, 24, 39, .82);
+
+      color:
+        rgba(172, 91, 91, .92);
+
+      font-family:
+        "Times New Roman",
+        "Yu Mincho",
+        "Hiragino Mincho ProN",
+        serif;
+
+      font-size: .78rem;
+
+      font-weight: 400;
+
+      line-height: 1;
+
+      letter-spacing: .02em;
+
+      opacity: 0;
+
+      visibility: hidden;
+
+      transform:
+        translateY(-.15rem);
+
+      transition:
+        opacity .35s ease,
+        visibility .35s ease,
+        transform .35s ease;
+
+      pointer-events: none;
     }
 
 
-    const style =
-      document.createElement("style");
+    /*
+     * 上下に細い装飾線を追加。
+     *
+     * Rそのものを目立たせるのではなく、
+     * 古い本のラベルのような印象にする。
+     */
+
+    .book__r-mark::before,
+    .book__r-mark::after {
+      content: "";
+
+      position: absolute;
+
+      left: .25rem;
+      right: .25rem;
+
+      height: 1px;
+
+      background:
+        rgba(143, 63, 63, .5);
+    }
 
 
-    style.id =
-      "bookshelf-r-mark-style";
+    .book__r-mark::before {
+      top: .25rem;
+    }
 
 
-    style.textContent = `
-      /*
-       * R指定マーク
-       *
-       * 中央に選択された本の
-       * 右上に重ねて表示。
-       */
+    .book__r-mark::after {
+      bottom: .25rem;
+    }
+
+
+    /*
+     * 中央に選択された本だけ表示。
+     */
+
+    .book__r-mark.is-visible {
+      opacity: 1;
+
+      visibility: visible;
+
+      transform:
+        translateY(0);
+    }
+
+
+    /*
+     * 小さいスマートフォン
+     */
+
+    @media (max-width: 380px) {
 
       .book__r-mark {
-        position: absolute;
+        top: .4rem;
+        right: .4rem;
 
-        top: .45rem;
-        right: .45rem;
+        width: 1.2rem;
+        height: 1.6rem;
 
-        z-index: 50;
-
-        display: flex;
-
-        align-items: center;
-        justify-content: center;
-
-        width: 1.7rem;
-        height: 1.7rem;
-
-        box-sizing: border-box;
-
-        border: 1px solid #D43B3B;
-        border-radius: 50%;
-
-        background: rgba(16, 24, 39, .88);
-
-        color: #FF4A4A;
-
-        font-family:
-          Arial,
-          "Helvetica Neue",
-          sans-serif;
-
-        font-size: .9rem;
-        font-weight: 700;
-
-        line-height: 1;
-
-        letter-spacing: 0;
-
-        opacity: 0;
-        visibility: hidden;
-
-        transform:
-          scale(.85);
-
-        transition:
-          opacity .3s ease,
-          visibility .3s ease,
-          transform .3s ease;
-
-        pointer-events: none;
+        font-size: .7rem;
       }
 
 
-      .book__r-mark.is-visible {
-        opacity: 1;
-
-        visibility: visible;
-
-        transform:
-          scale(1);
+      .book__r-mark::before,
+      .book__r-mark::after {
+        left: .22rem;
+        right: .22rem;
       }
 
+    }
 
-      /*
-       * 小さいスマートフォン
-       */
 
-      @media (max-width: 380px) {
+    /*
+     * タブレット・PC
+     */
 
-        .book__r-mark {
-          top: .35rem;
-          right: .35rem;
+    @media (min-width: 700px) {
 
-          width: 1.5rem;
-          height: 1.5rem;
+      .book__r-mark {
+        top: .6rem;
+        right: .6rem;
 
-          font-size: .8rem;
-        }
+        width: 1.5rem;
+        height: 2rem;
 
+        font-size: .85rem;
       }
 
-
-      /*
-       * タブレット・PC
-       */
-
-      @media (min-width: 700px) {
-
-        .book__r-mark {
-          top: .55rem;
-          right: .55rem;
-
-          width: 1.9rem;
-          height: 1.9rem;
-
-          font-size: 1rem;
-        }
-
-      }
-    `;
+    }
+  `;
 
 
-    document.head.appendChild(style);
-  }
+  document.head.appendChild(style);
+}
 
 
   /* =========================================================
