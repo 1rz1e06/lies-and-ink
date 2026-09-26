@@ -670,3 +670,267 @@
     transition: none;
   }
 }
+
+/* =========================================================
+   PAGE JUMP
+   ========================================================= */
+
+.work-page-indicator {
+  appearance: none;
+  -webkit-appearance: none;
+
+  border: 0;
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+
+  margin: 0.8rem auto 0;
+  padding: 0.55rem 0.9rem;
+
+  color: rgba(241, 238, 231, 0.68);
+
+  font-family:
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+
+  cursor: pointer;
+
+  transition:
+    color 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.work-page-indicator:hover,
+.work-page-indicator:focus-visible {
+  color: rgba(241, 238, 231, 0.95);
+  outline: none;
+}
+
+.work-page-indicator:active {
+  opacity: 0.6;
+}
+
+.work-page-indicator__slash {
+  opacity: 0.4;
+}
+
+
+/* =========================================================
+   PAGE JUMP PANEL
+   ========================================================= */
+
+.work-page-jump {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    max(1.5rem, env(safe-area-inset-top))
+    1.5rem
+    max(1.5rem, env(safe-area-inset-bottom));
+
+  background: rgba(16, 24, 39, 0.82);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  opacity: 1;
+}
+
+.work-page-jump[hidden] {
+  display: none;
+}
+
+
+.work-page-jump__inner {
+  width: min(100%, 20rem);
+
+  padding: 1.6rem 1.4rem 1.35rem;
+
+  border: 1px solid rgba(241, 238, 231, 0.16);
+
+  background: rgba(27, 49, 80, 0.96);
+
+  box-shadow:
+    0 1.5rem 4rem rgba(0, 0, 0, 0.35);
+
+  text-align: center;
+}
+
+
+.work-page-jump__label {
+  margin: 0 0 1.15rem;
+
+  color: rgba(241, 238, 231, 0.62);
+
+  font-family:
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+}
+
+
+/* 入力欄＋GO */
+
+.work-page-jump__form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.45rem;
+}
+
+
+.work-page-jump__input {
+  box-sizing: border-box;
+
+  width: 5rem;
+  height: 2.8rem;
+
+  border: 1px solid rgba(241, 238, 231, 0.25);
+
+  border-radius: 0;
+
+  background: rgba(16, 24, 39, 0.72);
+
+  color: #f1eee7;
+
+  text-align: center;
+
+  font-family:
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+
+  outline: none;
+
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+
+.work-page-jump__input:focus {
+  border-color: var(--category-color, #6e91b5);
+
+  box-shadow:
+    0 0 0 1px
+    var(--category-color, #6e91b5);
+}
+
+
+/* Chrome / Safari の number spinner を消す */
+
+.work-page-jump__input::-webkit-outer-spin-button,
+.work-page-jump__input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+
+.work-page-jump__total {
+  color: rgba(241, 238, 231, 0.5);
+
+  font-family:
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+
+  white-space: nowrap;
+}
+
+
+.work-page-jump__button {
+  height: 2.8rem;
+
+  padding: 0 1rem;
+
+  border: 1px solid
+    var(--category-color, #6e91b5);
+
+  border-radius: 0;
+
+  background:
+    var(--category-color, #6e91b5);
+
+  color: #101827;
+
+  font-family:
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  letter-spacing: 0.14em;
+
+  cursor: pointer;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.work-page-jump__button:hover {
+  opacity: 0.9;
+}
+
+
+.work-page-jump__button:active {
+  transform: translateY(1px);
+}
+
+
+/* CANCEL */
+
+.work-page-jump__close {
+  margin-top: 1rem;
+
+  padding: 0.5rem 0.8rem;
+
+  border: 0;
+  background: transparent;
+
+  color: rgba(241, 238, 231, 0.45);
+
+  font-family:
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease;
+}
+
+
+.work-page-jump__close:hover,
+.work-page-jump__close:focus-visible {
+  color: rgba(241, 238, 231, 0.8);
+  outline: none;
+}
