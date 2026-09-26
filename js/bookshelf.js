@@ -166,7 +166,7 @@
 
   /* =========================================================
      INFO
-     
+
      info.txt は自由記述。
      固定の書式・項目は一切使用しない。
   ========================================================= */
@@ -218,7 +218,7 @@
 
   /* =========================================================
      COVER IMAGE
-     
+
      cover.jpg があるか確認。
      なければ null。
   ========================================================= */
@@ -269,6 +269,60 @@
 
 
   /* =========================================================
+     R MARK
+
+     作品フォルダに R.txt が存在する場合、
+     R指定作品として扱う。
+
+     R.txt の中身は不要。
+     空ファイルでもOK。
+  ========================================================= */
+
+  async function checkRMark(workNumber) {
+
+    const url =
+      `${getWorkBaseUrl(workNumber)}/R.txt`;
+
+
+    try {
+
+      const response =
+        await fetch(url, {
+          method: "HEAD",
+          cache: "no-store"
+        });
+
+
+      /*
+       * R.txt が存在すればR指定。
+       */
+
+      return response.ok;
+
+    } catch (error) {
+
+      /*
+       * HEADが使えない環境への保険としてGETを試す。
+       */
+
+      try {
+
+        const response =
+          await fetch(url, {
+            cache: "no-store"
+          });
+
+        return response.ok;
+
+      } catch (fallbackError) {
+
+        return false;
+      }
+    }
+  }
+
+
+  /* =========================================================
      WORK LOADING
   ========================================================= */
 
@@ -289,10 +343,12 @@
 
     const [
       info,
-      cover
+      cover,
+      isR
     ] = await Promise.all([
       fetchInfo(workNumber),
-      checkCover(workNumber)
+      checkCover(workNumber),
+      checkRMark(workNumber)
     ]);
 
 
@@ -300,7 +356,8 @@
       number: story.number,
       title: story.title,
       info,
-      cover
+      cover,
+      isR
     };
   }
 
@@ -458,6 +515,39 @@
 
 
   /* =========================================================
+     R MARK ELEMENT
+  ========================================================= */
+
+  function createRMark(work) {
+
+    if (!work.isR) {
+      return null;
+    }
+
+
+    const mark =
+      document.createElement("span");
+
+
+    mark.className =
+      "book__r-mark";
+
+
+    mark.textContent =
+      "R";
+
+
+    mark.setAttribute(
+      "aria-label",
+      "R指定作品"
+    );
+
+
+    return mark;
+  }
+
+
+  /* =========================================================
      BOOK CREATION
   ========================================================= */
 
@@ -476,6 +566,23 @@
 
     book.dataset.work =
       work.number;
+
+
+    /*
+     * R指定作品の場合
+     * Rマークを作成。
+     *
+     * 実際に表示されるのは
+     * 中央に選択されたときだけ。
+     */
+
+    const rMark =
+      createRMark(work);
+
+
+    if (rMark) {
+      book.appendChild(rMark);
+    }
 
 
     /*
@@ -502,14 +609,18 @@
       image.className =
         "book__cover-image";
 
+
       image.src =
         work.cover;
+
 
       image.alt =
         `${work.title} の書影`;
 
+
       image.loading =
         "lazy";
+
 
       image.decoding =
         "async";
@@ -527,6 +638,7 @@
           book.classList.remove(
             "book--has-cover"
           );
+
 
           cover.innerHTML =
             createFallbackCover(
@@ -554,8 +666,10 @@
       cover.className =
         "book__cover";
 
+
       cover.innerHTML =
         createFallbackCover(work);
+
 
       book.appendChild(cover);
     }
@@ -568,8 +682,10 @@
     const spineNumber =
       document.createElement("span");
 
+
     spineNumber.className =
       "book__spine-number";
+
 
     spineNumber.textContent =
       work.number;
@@ -603,6 +719,7 @@
     const wrapper =
       document.createElement("span");
 
+
     wrapper.className =
       "book__cover-fallback";
 
@@ -610,8 +727,10 @@
     const number =
       document.createElement("span");
 
+
     number.className =
       "book__cover-number";
+
 
     number.textContent =
       work.number;
@@ -620,8 +739,10 @@
     const title =
       document.createElement("span");
 
+
     title.className =
       "book__cover-title";
+
 
     title.textContent =
       work.title;
@@ -641,6 +762,141 @@
      */
 
     return wrapper.outerHTML;
+  }
+
+
+  /* =========================================================
+     R MARK STATE
+  ========================================================= */
+
+  function updateRMark() {
+
+    const books =
+      trackElement.querySelectorAll(
+        ".book"
+      );
+
+
+    books.forEach(
+      (book, index) => {
+
+        const mark =
+          book.querySelector(
+            ".book__r-mark"
+          );
+
+
+        if (!mark) {
+          return;
+        }
+
+
+        const isCurrent =
+          index === currentIndex;
+
+
+        mark.classList.toggle(
+          "is-visible",
+          isCurrent
+        );
+      }
+    );
+  }
+
+
+  /* =========================================================
+     R MARK STYLE
+  ========================================================= */
+
+  function setupRMarkStyle() {
+
+    /*
+     * JS側だけでRマークを表示できるよう、
+     * 必要なCSSを動的に追加。
+     *
+     * bookshelf.css側を変更する必要はありません。
+     */
+
+    if (
+      document.getElementById(
+        "bookshelf-r-mark-style"
+      )
+    ) {
+      return;
+    }
+
+
+    const style =
+      document.createElement("style");
+
+
+    style.id =
+      "bookshelf-r-mark-style";
+
+
+    style.textContent = `
+      .book__r-mark {
+        position: absolute;
+        right: -0.15rem;
+        bottom: -1.7rem;
+        z-index: 30;
+
+        display: block;
+
+        color: #D43B3B;
+
+        font-family:
+          Arial,
+          "Helvetica Neue",
+          sans-serif;
+
+        font-size: 1.15rem;
+        font-weight: 600;
+
+        line-height: 1;
+
+        letter-spacing: .04em;
+
+        opacity: 0;
+        visibility: hidden;
+
+        transform:
+          translateY(-0.2rem);
+
+        transition:
+          opacity .3s ease,
+          visibility .3s ease,
+          transform .3s ease;
+
+        pointer-events: none;
+      }
+
+      .book__r-mark.is-visible {
+        opacity: 1;
+        visibility: visible;
+
+        transform:
+          translateY(0);
+      }
+
+      @media (max-width: 380px) {
+        .book__r-mark {
+          right: -0.1rem;
+          bottom: -1.45rem;
+          font-size: 1rem;
+        }
+      }
+
+      @media (min-width: 700px) {
+        .book__r-mark {
+          bottom: -1.8rem;
+          font-size: 1.2rem;
+        }
+      }
+    `;
+
+
+    document.head.appendChild(style);
   }
 
 
@@ -752,6 +1008,7 @@
             currentTransform
           );
 
+
         currentX =
           matrix.m41;
 
@@ -858,6 +1115,14 @@
     );
 
 
+    /*
+     * 中央の作品がR指定なら
+     * Rマークを表示。
+     */
+
+    updateRMark();
+
+
     updateHint();
 
 
@@ -958,7 +1223,7 @@
 
   /* =========================================================
      TRANSITION
-  ========================================================= */
+     ========================================================= */
 
   function showTransition(title) {
 
@@ -982,7 +1247,7 @@
 
   /* =========================================================
      BACK TO STUDY
-  ========================================================= */
+     ========================================================= */
 
   function setupBackButton() {
 
@@ -1001,7 +1266,7 @@
 
   /* =========================================================
      TOUCH
-  ========================================================= */
+     ========================================================= */
 
   function setupTouchEvents() {
 
@@ -1089,7 +1354,7 @@
 
   /* =========================================================
      KEYBOARD
-  ========================================================= */
+     ========================================================= */
 
   function setupKeyboardEvents() {
 
@@ -1148,7 +1413,7 @@
 
   /* =========================================================
      OPEN BUTTON
-  ========================================================= */
+     ========================================================= */
 
   function setupOpenButton() {
 
@@ -1166,7 +1431,7 @@
 
   /* =========================================================
      RESIZE
-  ========================================================= */
+     ========================================================= */
 
   function setupResize() {
 
@@ -1185,7 +1450,7 @@
 
   /* =========================================================
      CATEGORY COLOR
-  ========================================================= */
+     ========================================================= */
 
   function setupCategoryColor() {
 
@@ -1206,7 +1471,7 @@
 
   /* =========================================================
      EMPTY
-  ========================================================= */
+     ========================================================= */
 
   function renderEmpty() {
 
@@ -1247,7 +1512,7 @@
 
   /* =========================================================
      INITIAL INDEX
-  ========================================================= */
+     ========================================================= */
 
   function getInitialIndex() {
 
@@ -1277,7 +1542,7 @@
 
   /* =========================================================
      INITIALIZE
-  ========================================================= */
+     ========================================================= */
 
   async function initialize() {
 
@@ -1287,6 +1552,13 @@
     ) {
       return;
     }
+
+
+    /*
+     * Rマーク用のCSSを準備。
+     */
+
+    setupRMarkStyle();
 
 
     category =
