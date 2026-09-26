@@ -23,7 +23,7 @@ document.addEventListener(
      */
 
     const PASSWORD =
-      "801rps11256";
+      "45otter6";
 
 
     /*
