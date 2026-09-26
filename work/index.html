@@ -2,12 +2,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   >
-
   <meta
     name="robots"
     content="noindex, nofollow, noarchive"
@@ -21,23 +19,11 @@
 
 <body class="work-page">
 
-  <main
-    class="work"
-    id="work"
-  >
+  <main class="work" id="work">
 
-    <div
-      class="work__background"
-      aria-hidden="true"
-    ></div>
-
-
-    <!-- =========================
-         HEADER
-    ========================== -->
+    <div class="work__background" aria-hidden="true"></div>
 
     <header class="work-header">
-
       <a
         href="#"
         class="work-header__back"
@@ -49,13 +35,8 @@
       <div class="work-header__brand">
         LIES &amp; INK
       </div>
-
     </header>
 
-
-    <!-- =========================
-         WORK INTRO
-    ========================== -->
 
     <section
       class="work-intro"
@@ -63,33 +44,26 @@
       aria-label="作品情報"
     >
 
-      <!-- COVER -->
-
       <div
         class="work-cover"
         id="workCover"
         aria-hidden="true"
         hidden
       >
-
         <img
           id="workCoverImage"
           class="work-cover__image"
           src=""
           alt=""
         >
-
       </div>
 
-
-      <!-- TITLE -->
 
       <div
         class="work-title"
         id="workTitleBlock"
         aria-label="作品タイトル"
       >
-
         <p
           class="work-title__number"
           id="workNumber"
@@ -103,18 +77,14 @@
         >
           —
         </h1>
-
       </div>
 
-
-      <!-- DESCRIPTION -->
 
       <section
         class="work-info"
         id="workInfo"
         aria-label="作品紹介"
       >
-
         <div
           class="work-info__meta"
           id="workMeta"
@@ -125,15 +95,10 @@
           class="work-info__description"
           id="workDescription"
         ></div>
-
       </section>
 
     </section>
 
-
-    <!-- =========================
-         STORY PAGE
-    ========================== -->
 
     <section
       class="work-reader"
@@ -141,46 +106,81 @@
       aria-label="作品本文"
     >
 
-      <!-- PAGE -->
-
       <div
         class="work-page-view"
         id="workPageView"
       >
-
         <article
           class="work-story"
           id="workBody"
         ></article>
-
       </div>
 
 
-      <!-- PAGE NUMBER -->
-
-      <div
+      <!-- ページ番号 -->
+      <button
+        type="button"
         class="work-page-indicator"
         id="workPageIndicator"
-        aria-live="polite"
+        aria-label="ページを指定して移動"
       >
+        <span id="currentPage">01</span>
+        <span class="work-page-indicator__slash">/</span>
+        <span id="totalPages">01</span>
+      </button>
 
-        <span id="currentPage">
-          01
-        </span>
 
-        <span class="work-page-indicator__slash">
-          /
-        </span>
+      <!-- ページジャンプ -->
+      <div
+        class="work-page-jump"
+        id="workPageJump"
+        hidden
+      >
+        <div class="work-page-jump__inner">
 
-        <span id="totalPages">
-          01
-        </span>
+          <p class="work-page-jump__label">
+            GO TO PAGE
+          </p>
 
+          <div class="work-page-jump__form">
+
+            <input
+              type="number"
+              id="pageJumpInput"
+              class="work-page-jump__input"
+              min="1"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              aria-label="移動するページ番号"
+            >
+
+            <span class="work-page-jump__total">
+              / <span id="pageJumpTotal">01</span>
+            </span>
+
+            <button
+              type="button"
+              id="pageJumpButton"
+              class="work-page-jump__button"
+            >
+              GO
+            </button>
+
+          </div>
+
+          <button
+            type="button"
+            id="pageJumpClose"
+            class="work-page-jump__close"
+          >
+            CANCEL
+          </button>
+
+        </div>
       </div>
 
 
-      <!-- PAGE NAVIGATION -->
-
+      <!-- 前後ページ -->
       <nav
         class="work-page-navigation"
         aria-label="ページ移動"
@@ -207,10 +207,6 @@
     </section>
 
 
-    <!-- =========================
-         FOOTER
-    ========================== -->
-
     <footer class="work-footer">
 
       <a
@@ -223,10 +219,6 @@
 
     </footer>
 
-
-    <!-- =========================
-         LOADING
-    ========================== -->
 
     <div
       class="work-loading"
@@ -242,7 +234,7 @@
 
 
   <script src="../js/data.js"></script>
-  <script src="../js/work.js"></script>
+  <script src="../js/work.js?v=4"></script>
 
 </body>
 </html>
