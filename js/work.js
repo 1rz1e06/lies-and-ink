@@ -7,14 +7,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const work = document.getElementById("work");
 
-  const workNumber = document.getElementById("workNumber");
-  const workTitle = document.getElementById("workTitle");
+  const workNumber =
+    document.getElementById("workNumber");
 
-  const workCover = document.getElementById("workCover");
-  const workCoverImage = document.getElementById("workCoverImage");
+  const workTitle =
+    document.getElementById("workTitle");
 
-  const workInfo = document.getElementById("workInfo");
-  const workMeta = document.getElementById("workMeta");
+  const workCover =
+    document.getElementById("workCover");
+
+  const workCoverImage =
+    document.getElementById("workCoverImage");
+
+  const workInfo =
+    document.getElementById("workInfo");
+
+  const workMeta =
+    document.getElementById("workMeta");
+
   const workDescription =
     document.getElementById("workDescription");
 
@@ -40,16 +50,60 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("backToBookshelf");
 
   const backToBookshelfFooter =
-    document.getElementById("backToBookshelfFooter");
+    document.getElementById(
+      "backToBookshelfFooter"
+    );
 
   const loading =
     document.getElementById("workLoading");
 
   const loadingText =
-    document.getElementById("workLoadingText");
+    document.getElementById(
+      "workLoadingText"
+    );
+
+  /* =======================================================
+     Page Jump
+     ======================================================= */
+
+  const workPageIndicator =
+    document.getElementById(
+      "workPageIndicator"
+    );
+
+  const workPageJump =
+    document.getElementById(
+      "workPageJump"
+    );
+
+  const pageJumpInput =
+    document.getElementById(
+      "pageJumpInput"
+    );
+
+  const pageJumpTotal =
+    document.getElementById(
+      "pageJumpTotal"
+    );
+
+  const pageJumpButton =
+    document.getElementById(
+      "pageJumpButton"
+    );
+
+  const pageJumpClose =
+    document.getElementById(
+      "pageJumpClose"
+    );
+
+  /* =======================================================
+     URL
+     ======================================================= */
 
   const params =
-    new URLSearchParams(window.location.search);
+    new URLSearchParams(
+      window.location.search
+    );
 
   const categoryId =
     params.get("category");
@@ -57,9 +111,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const workId =
     params.get("work");
 
+  /* =======================================================
+     State
+     ======================================================= */
+
   let workData = null;
+
   let pages = [];
+
   let pageIndex = 0;
+
 
   /* =======================================================
      Category
@@ -68,15 +129,19 @@ document.addEventListener("DOMContentLoaded", () => {
   function getCategory() {
     if (
       !window.LiesInk ||
-      !Array.isArray(window.LiesInk.categories)
+      !Array.isArray(
+        window.LiesInk.categories
+      )
     ) {
       return null;
     }
 
     return window.LiesInk.categories.find(
-      (category) => category.id === categoryId
+      (category) =>
+        category.id === categoryId
     );
   }
+
 
   /* =======================================================
      Loading
@@ -86,7 +151,9 @@ document.addEventListener("DOMContentLoaded", () => {
     isLoading,
     message = "LOADING"
   ) {
-    if (!work) return;
+    if (!work) {
+      return;
+    }
 
     work.classList.toggle(
       "is-loading",
@@ -101,9 +168,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (loadingText) {
-      loadingText.textContent = message;
+      loadingText.textContent =
+        message;
     }
   }
+
 
   /* =======================================================
      Fetch
@@ -117,18 +186,23 @@ document.addEventListener("DOMContentLoaded", () => {
       new AbortController();
 
     const timer =
-      window.setTimeout(() => {
-        controller.abort();
-      }, timeout);
+      window.setTimeout(
+        () => {
+          controller.abort();
+        },
+        timeout
+      );
 
     try {
-      const response = await fetch(
-        `${url}?v=${Date.now()}`,
-        {
-          cache: "no-store",
-          signal: controller.signal
-        }
-      );
+      const response =
+        await fetch(
+          `${url}?v=${Date.now()}`,
+          {
+            cache: "no-store",
+            signal:
+              controller.signal
+          }
+        );
 
       if (!response.ok) {
         throw new Error(
@@ -142,6 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+
   /* =======================================================
      Image Check
      ======================================================= */
@@ -150,36 +225,50 @@ document.addEventListener("DOMContentLoaded", () => {
     url,
     timeout = 5000
   ) {
-    return new Promise((resolve) => {
-      const image = new Image();
+    return new Promise(
+      (resolve) => {
+        const image =
+          new Image();
 
-      let finished = false;
+        let finished = false;
 
-      const finish = (result) => {
-        if (finished) return;
+        const finish =
+          (result) => {
+            if (finished) {
+              return;
+            }
 
-        finished = true;
-        window.clearTimeout(timer);
-        resolve(result);
-      };
+            finished = true;
 
-      const timer =
-        window.setTimeout(() => {
+            window.clearTimeout(
+              timer
+            );
+
+            resolve(result);
+          };
+
+        const timer =
+          window.setTimeout(
+            () => {
+              finish(false);
+            },
+            timeout
+          );
+
+        image.onload = () => {
+          finish(true);
+        };
+
+        image.onerror = () => {
           finish(false);
-        }, timeout);
+        };
 
-      image.onload = () => {
-        finish(true);
-      };
-
-      image.onerror = () => {
-        finish(false);
-      };
-
-      image.src =
-        `${url}?v=${Date.now()}`;
-    });
+        image.src =
+          `${url}?v=${Date.now()}`;
+      }
+    );
   }
+
 
   /* =======================================================
      Story Parser
@@ -194,7 +283,10 @@ document.addEventListener("DOMContentLoaded", () => {
      */
 
     const normalized =
-      text.replace(/\r\n/g, "\n");
+      text.replace(
+        /\r\n/g,
+        "\n"
+      );
 
     const lines =
       normalized.split("\n");
@@ -204,12 +296,15 @@ document.addEventListener("DOMContentLoaded", () => {
     /*
      * 最初の非空行をタイトルとする。
      */
+
     for (
       let i = 0;
       i < lines.length;
       i += 1
     ) {
-      if (lines[i].trim() !== "") {
+      if (
+        lines[i].trim() !== ""
+      ) {
         titleIndex = i;
         break;
       }
@@ -223,27 +318,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /*
-     * タイトルだけは前後の空白を整理する。
-     *
-     * タイトルの字下げを本文と同じように
-     * 保持する必要はないため、ここだけtrim()を使用。
+     * タイトルだけ前後の空白を整理。
      */
+
     const title =
-      lines[titleIndex].trim();
+      lines[
+        titleIndex
+      ].trim();
 
     /*
      * タイトル以降を本文にする。
-     *
-     * ここから先は文字を変更しない。
      */
+
     const bodyLines =
-      lines.slice(titleIndex + 1);
+      lines.slice(
+        titleIndex + 1
+      );
 
     /*
-     * タイトル直後にある完全な空行だけ削除。
-     *
-     * 「　文章」のような行は削除しない。
+     * タイトル直後にある
+     * 完全な空行だけ削除。
      */
+
     while (
       bodyLines.length > 0 &&
       bodyLines[0].trim() === ""
@@ -252,10 +348,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /*
-     * 本文末尾にある完全な空行だけ削除。
-     *
-     * 本文そのものの文字は変更しない。
+     * 本文末尾にある
+     * 完全な空行だけ削除。
      */
+
     while (
       bodyLines.length > 0 &&
       bodyLines[
@@ -267,9 +363,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return {
       title,
-      body: bodyLines.join("\n")
+      body:
+        bodyLines.join("\n")
     };
   }
+
 
   /* =======================================================
      Long Paragraph Split
@@ -279,14 +377,20 @@ document.addEventListener("DOMContentLoaded", () => {
     paragraph,
     limit = 7000
   ) {
-    if (paragraph.length <= limit) {
+    if (
+      paragraph.length <= limit
+    ) {
       return [paragraph];
     }
 
     const result = [];
-    let remaining = paragraph;
 
-    while (remaining.length > limit) {
+    let remaining =
+      paragraph;
+
+    while (
+      remaining.length > limit
+    ) {
       let cut =
         remaining.lastIndexOf(
           "。",
@@ -295,7 +399,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (
         cut <
-        Math.floor(limit * 0.5)
+        Math.floor(
+          limit * 0.5
+        )
       ) {
         cut =
           remaining.lastIndexOf(
@@ -306,15 +412,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (
         cut <
-        Math.floor(limit * 0.5)
+        Math.floor(
+          limit * 0.5
+        )
       ) {
-        cut = limit - 1;
+        cut =
+          limit - 1;
       }
 
       /*
        * 切り出した文字列を
        * 一切加工せず保存する。
        */
+
       const chunk =
         remaining.slice(
           0,
@@ -329,12 +439,17 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    if (remaining.length > 0) {
-      result.push(remaining);
+    if (
+      remaining.length > 0
+    ) {
+      result.push(
+        remaining
+      );
     }
 
     return result;
   }
+
 
   /* =======================================================
      Auto Page Split
@@ -347,22 +462,18 @@ document.addEventListener("DOMContentLoaded", () => {
     /*
      * 空行を段落の区切りにする。
      *
-     * 全角スペースは区切り判定には影響するが、
-     * 実際の文字列からは削除しない。
+     * 全角スペースは削除しない。
      */
+
     const paragraphs =
       body.split(/\n{2,}/);
 
     const result = [];
+
     let current = "";
 
     paragraphs.forEach(
       (paragraph) => {
-        /*
-         * 空段落かどうかの判定だけ。
-         *
-         * paragraphそのものにはtrim()をかけない。
-         */
         if (
           paragraph.trim() === ""
         ) {
@@ -386,12 +497,15 @@ document.addEventListener("DOMContentLoaded", () => {
               candidate.length <=
               limit
             ) {
-              current = candidate;
+              current =
+                candidate;
             } else {
               if (
                 current.length > 0
               ) {
-                result.push(current);
+                result.push(
+                  current
+                );
               }
 
               current = piece;
@@ -401,8 +515,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
 
-    if (current.length > 0) {
-      result.push(current);
+    if (
+      current.length > 0
+    ) {
+      result.push(
+        current
+      );
     }
 
     return result.length > 0
@@ -410,48 +528,101 @@ document.addEventListener("DOMContentLoaded", () => {
       : [""];
   }
 
-   /* =======================================================
+
+  /* =======================================================
      Page Creation
      ======================================================= */
 
   function createPages(body) {
-  if (!body) {
-    return [""];
-  }
-
-  const normalizedBody = body.replace(/\r\n/g, "\n");
-
-  // ===PAGE=== を「区切り」として行単位で処理する
-  // line.trim() は判定だけに使用し、
-  // 実際の本文 line はそのまま保存する。
-  const lines = normalizedBody.split("\n");
-
-  const pages = [];
-  let currentPage = [];
-
-  lines.forEach((line) => {
-    if (line.trim() === "===PAGE===") {
-      pages.push(currentPage.join("\n"));
-      currentPage = [];
-      return;
+    if (!body) {
+      return [""];
     }
 
-    currentPage.push(line);
-  });
+    const normalizedBody =
+      body.replace(
+        /\r\n/g,
+        "\n"
+      );
 
-  // 最後のページを追加
-  pages.push(currentPage.join("\n"));
+    /*
+     * ===PAGE=== を
+     * 行単位でページ区切りとして処理。
+     *
+     * line.trim() は
+     * 「区切りかどうか」の判定だけに使用。
+     *
+     * 本文として保存する line は
+     * 一切trim()しない。
+     *
+     * そのため、
+     *
+     * 　ここから次のページです。
+     *
+     * の全角スペースも保持される。
+     */
 
-  return pages
-    .map((page) => {
-      // ページそのものの前後にある「空行」だけ削除
-      // 全角スペース「　」は削除しない
-      return page
-        .replace(/^\n+/, "")
-        .replace(/\n+$/, "");
-    })
-    .filter((page) => page.trim() !== "");
-}
+    const lines =
+      normalizedBody.split("\n");
+
+    const manualPages = [];
+
+    let currentPage = [];
+
+    lines.forEach(
+      (line) => {
+        if (
+          line.trim() ===
+          "===PAGE==="
+        ) {
+          manualPages.push(
+            currentPage.join("\n")
+          );
+
+          currentPage = [];
+
+          return;
+        }
+
+        currentPage.push(
+          line
+        );
+      }
+    );
+
+    /*
+     * 最後のページを追加。
+     */
+
+    manualPages.push(
+      currentPage.join("\n")
+    );
+
+    return manualPages
+      .map(
+        (page) => {
+          /*
+           * ページの前後にある
+           * 「空行」だけ削除。
+           *
+           * 全角スペースは削除しない。
+           */
+
+          return page
+            .replace(
+              /^\n+/,
+              ""
+            )
+            .replace(
+              /\n+$/,
+              ""
+            );
+        }
+      )
+      .filter(
+        (page) =>
+          page.trim() !== ""
+      );
+  }
 
 
   /* =======================================================
@@ -470,7 +641,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (
       !workId ||
-      !/^\d+$/.test(workId)
+      !/^\d+$/.test(
+        workId
+      )
     ) {
       throw new Error(
         "WORK_NOT_FOUND"
@@ -478,8 +651,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const number =
-      String(Number(workId))
-        .padStart(2, "0");
+      String(
+        Number(workId)
+      ).padStart(
+        2,
+        "0"
+      );
 
     const basePath =
       `../work/${category.id}/${number}`;
@@ -487,13 +664,16 @@ document.addEventListener("DOMContentLoaded", () => {
     /*
      * story.txt は必須。
      */
+
     const storyText =
       await fetchText(
         `${basePath}/story.txt`
       );
 
     const story =
-      parseStory(storyText);
+      parseStory(
+        storyText
+      );
 
     if (
       !story.title &&
@@ -507,6 +687,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*
      * info.txt は任意。
      */
+
     let info = "";
 
     try {
@@ -520,10 +701,12 @@ document.addEventListener("DOMContentLoaded", () => {
        *
        * 先頭の全角スペースは保持。
        */
-      info = info.replace(
-        /\n+$/,
-        ""
-      );
+
+      info =
+        info.replace(
+          /\n+$/,
+          ""
+        );
     } catch (error) {
       info = "";
     }
@@ -531,6 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*
      * cover.jpg は任意。
      */
+
     const coverPath =
       `${basePath}/cover.jpg`;
 
@@ -542,21 +726,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return {
       category,
       number,
-      title: story.title,
-      body: story.body,
+      title:
+        story.title,
+      body:
+        story.body,
       info,
-      cover: hasCover
-        ? coverPath
-        : null
+      cover:
+        hasCover
+          ? coverPath
+          : null
     };
   }
+
 
   /* =======================================================
      Render Work
      ======================================================= */
 
   function renderWork(data) {
-    if (!work) return;
+    if (!work) {
+      return;
+    }
 
     work.style.setProperty(
       "--category-color",
@@ -568,6 +758,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     workTitle.textContent =
       data.title;
+
 
     /* -------------------------------------------------------
        Cover
@@ -608,6 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
       workCoverImage.alt = "";
     }
 
+
     /* -------------------------------------------------------
        Info
        ------------------------------------------------------- */
@@ -617,11 +809,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
       workInfo.hidden = false;
 
-      /*
-       * textContentを使用。
-       *
-       * info.txt内の文字をそのまま表示する。
-       */
       workDescription.textContent =
         data.info;
 
@@ -643,6 +830,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "";
     }
 
+
     /* -------------------------------------------------------
        Title
        ------------------------------------------------------- */
@@ -662,6 +850,58 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
   }
+
+
+  /* =======================================================
+     Page Indicator
+     ======================================================= */
+
+  function updatePageIndicator() {
+    const current =
+      pageIndex + 1;
+
+    const total =
+      pages.length;
+
+    if (currentPage) {
+      currentPage.textContent =
+        String(
+          current
+        ).padStart(
+          2,
+          "0"
+        );
+    }
+
+    if (totalPages) {
+      totalPages.textContent =
+        String(
+          total
+        ).padStart(
+          2,
+          "0"
+        );
+    }
+
+    if (pageJumpTotal) {
+      pageJumpTotal.textContent =
+        String(
+          total
+        ).padStart(
+          2,
+          "0"
+        );
+    }
+
+    if (pageJumpInput) {
+      pageJumpInput.max =
+        String(total);
+
+      pageJumpInput.value =
+        String(current);
+    }
+  }
+
 
   /* =======================================================
      Render Page
@@ -683,11 +923,13 @@ document.addEventListener("DOMContentLoaded", () => {
     /*
      * 一度本文を空にする。
      */
+
     workBody.replaceChildren();
 
     /*
      * 空行を段落の区切りとして使用。
      */
+
     const paragraphs =
       page.split(/\n{2,}/);
 
@@ -695,32 +937,27 @@ document.addEventListener("DOMContentLoaded", () => {
       (paragraphText) => {
         /*
          * 空段落かどうかの判定だけ。
-         *
-         * ここでtrim()した文字列を
-         * textContentへ入れてはいけない。
          */
+
         if (
-          paragraphText.trim() === ""
+          paragraphText.trim() ===
+          ""
         ) {
           return;
         }
 
         const paragraph =
-          document.createElement("p");
+          document.createElement(
+            "p"
+          );
 
         /*
-         * ここが重要。
+         * 本文は一切加工せず
+         * そのまま表示する。
          *
-         * story.txtの文字列を
-         * 一切加工せず、そのまま表示する。
-         *
-         * 例えばstory.txtが
-         *
-         * 「　窓の外は、まだ夜だった。」
-         *
-         * なら、その「　」もそのまま
-         * textContentへ渡される。
+         * 全角スペース「　」も保持。
          */
+
         paragraph.textContent =
           paragraphText;
 
@@ -730,11 +967,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
 
-    currentPage.textContent =
-      String(pageIndex + 1);
+    /*
+     * ページ番号更新。
+     */
 
-    totalPages.textContent =
-      String(pages.length);
+    updatePageIndicator();
+
+    /*
+     * PREV / NEXT の有効状態。
+     */
 
     prevPage.disabled =
       pageIndex <= 0;
@@ -742,6 +983,10 @@ document.addEventListener("DOMContentLoaded", () => {
     nextPage.disabled =
       pageIndex >=
       pages.length - 1;
+
+    /*
+     * ページ先頭へ戻す。
+     */
 
     if (resetScroll) {
       workPageView.scrollTop = 0;
@@ -751,17 +996,13 @@ document.addEventListener("DOMContentLoaded", () => {
       "is-visible"
     );
 
-    const indicator =
-      document.getElementById(
-        "workPageIndicator"
-      );
-
-    if (indicator) {
-      indicator.classList.add(
+    if (workPageIndicator) {
+      workPageIndicator.classList.add(
         "is-visible"
       );
     }
   }
+
 
   /* =======================================================
      Page Navigation
@@ -780,23 +1021,226 @@ document.addEventListener("DOMContentLoaded", () => {
     renderCurrentPage(true);
   }
 
-  prevPage.addEventListener(
-    "click",
-    () => {
-      goToPage(
-        pageIndex - 1
-      );
-    }
-  );
 
-  nextPage.addEventListener(
-    "click",
-    () => {
-      goToPage(
+  if (prevPage) {
+    prevPage.addEventListener(
+      "click",
+      () => {
+        goToPage(
+          pageIndex - 1
+        );
+      }
+    );
+  }
+
+
+  if (nextPage) {
+    nextPage.addEventListener(
+      "click",
+      () => {
+        goToPage(
+          pageIndex + 1
+        );
+      }
+    );
+  }
+
+
+  /* =======================================================
+     Page Jump
+     ======================================================= */
+
+  function openPageJump() {
+    if (
+      !workPageJump ||
+      !pageJumpInput
+    ) {
+      return;
+    }
+
+    /*
+     * 現在のページを初期値にする。
+     */
+
+    pageJumpInput.value =
+      String(
         pageIndex + 1
       );
+
+    pageJumpInput.max =
+      String(
+        pages.length
+      );
+
+    if (pageJumpTotal) {
+      pageJumpTotal.textContent =
+        String(
+          pages.length
+        ).padStart(
+          2,
+          "0"
+        );
     }
-  );
+
+    workPageJump.hidden =
+      false;
+
+    /*
+     * 少し待ってから
+     * inputへフォーカス。
+     */
+
+    window.setTimeout(
+      () => {
+        pageJumpInput.focus();
+        pageJumpInput.select();
+      },
+      50
+    );
+  }
+
+
+  function closePageJump() {
+    if (!workPageJump) {
+      return;
+    }
+
+    workPageJump.hidden =
+      true;
+
+    if (pageJumpInput) {
+      pageJumpInput.blur();
+    }
+  }
+
+
+  function jumpToPage() {
+    if (!pageJumpInput) {
+      return;
+    }
+
+    const value =
+      Number.parseInt(
+        pageJumpInput.value,
+        10
+      );
+
+    /*
+     * 数字ではない、
+     * またはページ範囲外なら
+     * 移動しない。
+     */
+
+    if (
+      Number.isNaN(value) ||
+      value < 1 ||
+      value > pages.length
+    ) {
+      pageJumpInput.focus();
+      pageJumpInput.select();
+      return;
+    }
+
+    /*
+     * 入力値は1始まり。
+     *
+     * pageIndexは0始まりなので
+     * 1を引く。
+     */
+
+    pageIndex =
+      value - 1;
+
+    renderCurrentPage(
+      true
+    );
+
+    closePageJump();
+  }
+
+
+  /*
+   * ページ番号をタップ
+   */
+
+  if (workPageIndicator) {
+    workPageIndicator.addEventListener(
+      "click",
+      openPageJump
+    );
+  }
+
+
+  /*
+   * GOボタン
+   */
+
+  if (pageJumpButton) {
+    pageJumpButton.addEventListener(
+      "click",
+      jumpToPage
+    );
+  }
+
+
+  /*
+   * CANCELボタン
+   */
+
+  if (pageJumpClose) {
+    pageJumpClose.addEventListener(
+      "click",
+      closePageJump
+    );
+  }
+
+
+  /*
+   * 入力欄でEnter / Escape
+   */
+
+  if (pageJumpInput) {
+    pageJumpInput.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key === "Enter"
+        ) {
+          event.preventDefault();
+
+          jumpToPage();
+        }
+
+        if (
+          event.key === "Escape"
+        ) {
+          event.preventDefault();
+
+          closePageJump();
+        }
+      }
+    );
+  }
+
+
+  /*
+   * パネルの外側をタップして閉じる
+   */
+
+  if (workPageJump) {
+    workPageJump.addEventListener(
+      "click",
+      (event) => {
+        if (
+          event.target ===
+          workPageJump
+        ) {
+          closePageJump();
+        }
+      }
+    );
+  }
+
 
   /* =======================================================
      Keyboard Navigation
@@ -805,6 +1249,18 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener(
     "keydown",
     (event) => {
+      /*
+       * ページ入力中は
+       * 左右キーによるページ移動をしない。
+       */
+
+      if (
+        document.activeElement ===
+        pageJumpInput
+      ) {
+        return;
+      }
+
       if (
         event.key === "ArrowLeft"
       ) {
@@ -823,6 +1279,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   );
 
+
   /* =======================================================
      Touch Swipe
      ======================================================= */
@@ -830,71 +1287,84 @@ document.addEventListener("DOMContentLoaded", () => {
   let touchStartX = 0;
   let touchStartY = 0;
 
-  workPageView.addEventListener(
-    "touchstart",
-    (event) => {
-      const touch =
-        event.changedTouches[0];
+  if (workPageView) {
+    workPageView.addEventListener(
+      "touchstart",
+      (event) => {
+        const touch =
+          event.changedTouches[0];
 
-      touchStartX =
-        touch.clientX;
+        touchStartX =
+          touch.clientX;
 
-      touchStartY =
-        touch.clientY;
-    },
-    { passive: true }
-  );
-
-  workPageView.addEventListener(
-    "touchend",
-    (event) => {
-      const touch =
-        event.changedTouches[0];
-
-      const deltaX =
-        touch.clientX -
-        touchStartX;
-
-      const deltaY =
-        touch.clientY -
-        touchStartY;
-
-      /*
-       * 縦スクロールが主体なら
-       * ページ移動しない。
-       */
-      if (
-        Math.abs(deltaY) >
-        Math.abs(deltaX)
-      ) {
-        return;
+        touchStartY =
+          touch.clientY;
+      },
+      {
+        passive: true
       }
+    );
 
-      if (
-        Math.abs(deltaX) < 60
-      ) {
-        return;
-      }
 
-      if (deltaX < 0) {
-        goToPage(
-          pageIndex + 1
-        );
-      } else {
-        goToPage(
-          pageIndex - 1
-        );
+    workPageView.addEventListener(
+      "touchend",
+      (event) => {
+        const touch =
+          event.changedTouches[0];
+
+        const deltaX =
+          touch.clientX -
+          touchStartX;
+
+        const deltaY =
+          touch.clientY -
+          touchStartY;
+
+        /*
+         * 縦スクロールが主体なら
+         * ページ移動しない。
+         */
+
+        if (
+          Math.abs(deltaY) >
+          Math.abs(deltaX)
+        ) {
+          return;
+        }
+
+        if (
+          Math.abs(deltaX) < 60
+        ) {
+          return;
+        }
+
+        if (deltaX < 0) {
+          goToPage(
+            pageIndex + 1
+          );
+        } else {
+          goToPage(
+            pageIndex - 1
+          );
+        }
+      },
+      {
+        passive: true
       }
-    },
-    { passive: true }
-  );
+    );
+  }
+
 
   /* =======================================================
      Back Links
      ======================================================= */
 
-  function setupBackLink(link) {
-    if (!link) return;
+  function setupBackLink(
+    link
+  ) {
+    if (!link) {
+      return;
+    }
 
     link.href =
       `../bookshelf/index.html?category=${encodeURIComponent(
@@ -904,6 +1374,7 @@ document.addEventListener("DOMContentLoaded", () => {
       )}`;
   }
 
+
   setupBackLink(
     backToBookshelf
   );
@@ -912,17 +1383,22 @@ document.addEventListener("DOMContentLoaded", () => {
     backToBookshelfFooter
   );
 
+
   /* =======================================================
      Error
      ======================================================= */
 
-  function showError(message) {
+  function showError(
+    message
+  ) {
     setLoading(false);
 
     workBody.replaceChildren();
 
     const error =
-      document.createElement("div");
+      document.createElement(
+        "div"
+      );
 
     error.className =
       "work-error";
@@ -936,7 +1412,9 @@ document.addEventListener("DOMContentLoaded", () => {
       "WORK NOT FOUND";
 
     const text =
-      document.createElement("p");
+      document.createElement(
+        "p"
+      );
 
     text.textContent =
       message;
@@ -957,17 +1435,13 @@ document.addEventListener("DOMContentLoaded", () => {
       "is-visible"
     );
 
-    const indicator =
-      document.getElementById(
-        "workPageIndicator"
-      );
-
-    if (indicator) {
-      indicator.classList.add(
+    if (workPageIndicator) {
+      workPageIndicator.classList.add(
         "is-visible"
       );
     }
   }
+
 
   /* =======================================================
      Init
@@ -998,6 +1472,13 @@ document.addEventListener("DOMContentLoaded", () => {
         true
       );
 
+      /*
+       * ページ数を
+       * ジャンプ機能にも反映。
+       */
+
+      updatePageIndicator();
+
       setLoading(false);
     } catch (error) {
       console.error(
@@ -1011,5 +1492,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+
   init();
 });
+
