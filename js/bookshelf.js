@@ -240,9 +240,9 @@
 
       if (
         response.ok &&
-        response.headers.get("content-type")?.startsWith(
-          "image/"
-        )
+        response.headers
+          .get("content-type")
+          ?.startsWith("image/")
       ) {
         return url;
       }
@@ -806,16 +806,16 @@
 
   /* =========================================================
      R MARK STYLE
+
+     中央に選択された表紙の
+     右上へ赤いRマークを表示。
+
+     表紙の外側には出さない。
+     そのため overflow:hidden によって
+     消えることもありません。
   ========================================================= */
 
   function setupRMarkStyle() {
-
-    /*
-     * JS側だけでRマークを表示できるよう、
-     * 必要なCSSを動的に追加。
-     *
-     * bookshelf.css側を変更する必要はありません。
-     */
 
     if (
       document.getElementById(
@@ -835,33 +835,55 @@
 
 
     style.textContent = `
+      /*
+       * R指定マーク
+       *
+       * 中央に選択された本の
+       * 右上に重ねて表示。
+       */
+
       .book__r-mark {
         position: absolute;
-        right: -0.15rem;
-        bottom: -1.7rem;
-        z-index: 30;
 
-        display: block;
+        top: .45rem;
+        right: .45rem;
 
-        color: #D43B3B;
+        z-index: 50;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        width: 1.7rem;
+        height: 1.7rem;
+
+        box-sizing: border-box;
+
+        border: 1px solid #D43B3B;
+        border-radius: 50%;
+
+        background: rgba(16, 24, 39, .88);
+
+        color: #FF4A4A;
 
         font-family:
           Arial,
           "Helvetica Neue",
           sans-serif;
 
-        font-size: 1.15rem;
-        font-weight: 600;
+        font-size: .9rem;
+        font-weight: 700;
 
         line-height: 1;
 
-        letter-spacing: .04em;
+        letter-spacing: 0;
 
         opacity: 0;
         visibility: hidden;
 
         transform:
-          translateY(-0.2rem);
+          scale(.85);
 
         transition:
           opacity .3s ease,
@@ -871,32 +893,121 @@
         pointer-events: none;
       }
 
+
       .book__r-mark.is-visible {
         opacity: 1;
+
         visibility: visible;
 
         transform:
-          translateY(0);
+          scale(1);
       }
+
+
+      /*
+       * 小さいスマートフォン
+       */
 
       @media (max-width: 380px) {
+
         .book__r-mark {
-          right: -0.1rem;
-          bottom: -1.45rem;
-          font-size: 1rem;
+          top: .35rem;
+          right: .35rem;
+
+          width: 1.5rem;
+          height: 1.5rem;
+
+          font-size: .8rem;
         }
+
       }
 
+
+      /*
+       * タブレット・PC
+       */
+
       @media (min-width: 700px) {
+
         .book__r-mark {
-          bottom: -1.8rem;
-          font-size: 1.2rem;
+          top: .55rem;
+          right: .55rem;
+
+          width: 1.9rem;
+          height: 1.9rem;
+
+          font-size: 1rem;
         }
+
       }
     `;
 
 
     document.head.appendChild(style);
+  }
+
+
+  /* =========================================================
+     R MARK DEBUG
+
+     R.txt が正しく認識されているかを
+     コンソールで確認しやすくするための処理。
+  ========================================================= */
+
+  function logRWorks() {
+
+    const rWorks =
+      works.filter(
+        (work) => work.isR
+      );
+
+
+    if (!rWorks.length) {
+      return;
+    }
+
+
+    console.info(
+      "R指定作品:",
+      rWorks.map(
+        (work) =>
+          `${work.number} ${work.title}`
+      )
+    );
+  }
+
+
+  /* =========================================================
+     R MARK VISIBILITY
+
+     現在中央にある本だけRを表示。
+  ========================================================= */
+
+  function refreshRMark() {
+
+    updateRMark();
+
+    /*
+     * 現在の本がR指定かどうかも
+     * data属性として保持。
+     *
+     * 必要になった場合にCSS側から
+     * 状態を参照できるようにする。
+     */
+
+    if (!bookshelfElement) {
+      return;
+    }
+
+
+    const currentWork =
+      works[currentIndex];
+
+
+    bookshelfElement.dataset.currentR =
+      currentWork?.isR
+        ? "true"
+        : "false";
   }
 
 
@@ -1117,10 +1228,10 @@
 
     /*
      * 中央の作品がR指定なら
-     * Rマークを表示。
+     * 右上のRマークを表示。
      */
 
-    updateRMark();
+    refreshRMark();
 
 
     updateHint();
@@ -1214,7 +1325,10 @@
 
     window.setTimeout(
       () => {
-        window.location.href = url;
+
+        window.location.href =
+          url;
+
       },
       450
     );
@@ -1223,7 +1337,7 @@
 
   /* =========================================================
      TRANSITION
-     ========================================================= */
+  ========================================================= */
 
   function showTransition(title) {
 
@@ -1247,7 +1361,7 @@
 
   /* =========================================================
      BACK TO STUDY
-     ========================================================= */
+  ========================================================= */
 
   function setupBackButton() {
 
@@ -1266,7 +1380,7 @@
 
   /* =========================================================
      TOUCH
-     ========================================================= */
+  ========================================================= */
 
   function setupTouchEvents() {
 
@@ -1354,7 +1468,7 @@
 
   /* =========================================================
      KEYBOARD
-     ========================================================= */
+  ========================================================= */
 
   function setupKeyboardEvents() {
 
@@ -1413,7 +1527,7 @@
 
   /* =========================================================
      OPEN BUTTON
-     ========================================================= */
+  ========================================================= */
 
   function setupOpenButton() {
 
@@ -1431,7 +1545,7 @@
 
   /* =========================================================
      RESIZE
-     ========================================================= */
+  ========================================================= */
 
   function setupResize() {
 
@@ -1443,6 +1557,13 @@
           true
         );
 
+        /*
+         * サイズ変更後も
+         * Rマークの表示状態を維持。
+         */
+
+        refreshRMark();
+
       }
     );
   }
@@ -1450,7 +1571,7 @@
 
   /* =========================================================
      CATEGORY COLOR
-     ========================================================= */
+  ========================================================= */
 
   function setupCategoryColor() {
 
@@ -1471,7 +1592,7 @@
 
   /* =========================================================
      EMPTY
-     ========================================================= */
+  ========================================================= */
 
   function renderEmpty() {
 
@@ -1512,7 +1633,7 @@
 
   /* =========================================================
      INITIAL INDEX
-     ========================================================= */
+  ========================================================= */
 
   function getInitialIndex() {
 
@@ -1542,7 +1663,7 @@
 
   /* =========================================================
      INITIALIZE
-     ========================================================= */
+  ========================================================= */
 
   async function initialize() {
 
@@ -1607,6 +1728,14 @@
      */
 
     renderBooks();
+
+
+    /*
+     * R指定作品を確認しやすくするための
+     * コンソール表示。
+     */
+
+    logRWorks();
 
 
     /*
